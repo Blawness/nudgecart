@@ -24,6 +24,11 @@ export async function GET(
         stock: products.stock,
         description: products.description,
         isActive: products.isActive,
+        isEcoFriendly: products.isEcoFriendly,
+        ecoLabel: products.ecoLabel,
+        ecoTooltip: products.ecoTooltip,
+        carbonFootprint: products.carbonFootprint,
+        socialNormType: products.socialNormType,
         createdAt: products.createdAt,
         category: {
           id: categories.id,

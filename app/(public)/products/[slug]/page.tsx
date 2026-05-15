@@ -29,7 +29,7 @@ export async function generateMetadata({
   }
 
   return {
-    title: `${product.name} - Pasarku`,
+    title: `${product.name} - NudgeCart`,
     description: product.description,
   };
 }

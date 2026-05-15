@@ -13,7 +13,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Pasarku - Belanja Kebutuhan Dapur",
+  title: "NudgeCart - Belanja Kebutuhan Dapur",
   description:
     "Marketplace belanja kebutuhan dapur dan grocery segar di Indonesia. Sayur, buah, daging, bumbu dapur segar langsung dari petani dan pedagang terpercaya.",
 };

@@ -3,6 +3,8 @@ import Link from "next/link";
 import { formatRupiah } from "@/lib/utils";
 import { AddToCartButton } from "./AddToCartButton";
 import { Badge } from "@/components/ui/badge";
+import { EcoLabel } from "@/components/nudge/EcoLabel";
+import type { EcoLabel as EcoLabelType } from "@/types";
 
 interface ProductCardProps {
   product: {
@@ -14,6 +16,8 @@ interface ProductCardProps {
     imageUrl: string;
     storeName: string;
     merchantId: string;
+    isEcoFriendly?: boolean;
+    ecoLabel?: string | null;
   };
 }
 
@@ -33,6 +37,11 @@ export function ProductCard({ product }: ProductCardProps) {
             className="object-cover transition-transform duration-300 group-hover:scale-105"
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
           />
+          {product.isEcoFriendly && product.ecoLabel && (
+            <div className="absolute top-2 left-2">
+              <EcoLabel label={product.ecoLabel as EcoLabelType} />
+            </div>
+          )}
           {outOfStock && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/50">
               <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-gray-800 shadow">

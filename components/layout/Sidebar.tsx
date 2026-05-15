@@ -9,6 +9,7 @@ import {
   Store,
   Tags,
   Boxes,
+  BarChart3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { UserRole } from "@/types";
@@ -35,6 +36,7 @@ const adminLinks: NavItem[] = [
   { href: "/admin/merchants", label: "Merchant", icon: <Store className="size-4" /> },
   { href: "/admin/categories", label: "Kategori", icon: <Tags className="size-4" /> },
   { href: "/admin/orders", label: "Pesanan", icon: <ShoppingBag className="size-4" /> },
+  { href: "/admin/nudge", label: "Nudge Analytics", icon: <BarChart3 className="size-4" /> },
 ];
 
 export function Sidebar({ role }: SidebarProps) {

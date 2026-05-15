@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AddressPicker } from "@/components/checkout/AddressPicker";
 import { PaymentMethodPicker } from "@/components/checkout/PaymentMethodPicker";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { NudgeStaticBlock } from "@/components/nudge/NudgeStaticBlock";
 import { formatRupiah } from "@/lib/utils";
 import type { PaymentMethod } from "@/types";
 
@@ -242,6 +243,15 @@ export default function CheckoutPage() {
           >
             {checkoutMutation.isPending ? "Membuat Pesanan..." : "Buat Pesanan"}
           </Button>
+        </div>
+      )}
+
+      {!isLoading && items.length > 0 && (
+        <div className="mt-6">
+          <NudgeStaticBlock
+            headline="Kontribusi kamu"
+            body="Dengan berbelanja hari ini, kamu mendukung produk lokal dan berkontribusi mengurangi emisi karbon. Setiap pilihan kecil berdampak besar bagi lingkungan."
+          />
         </div>
       )}
     </div>

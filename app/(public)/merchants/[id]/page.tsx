@@ -31,7 +31,7 @@ export async function generateMetadata({
   }
 
   return {
-    title: `${merchant.storeName} - Pasarku`,
+    title: `${merchant.storeName} - NudgeCart`,
   };
 }
 

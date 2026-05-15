@@ -18,6 +18,10 @@ const createProductSchema = z.object({
   stock: z.number().min(0, "Stok tidak boleh negatif"),
   categoryId: z.string().min(1, "Kategori wajib dipilih"),
   imageUrls: z.array(z.string()).optional(),
+  isEcoFriendly: z.boolean().optional(),
+  ecoLabel: z.string().optional(),
+  ecoTooltip: z.string().optional(),
+  carbonFootprint: z.string().optional(),
 });
 
 export async function GET(request: Request) {
@@ -149,7 +153,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const { name, description, price, stock, categoryId, imageUrls } =
+    const { name, description, price, stock, categoryId, imageUrls, isEcoFriendly, ecoLabel, ecoTooltip, carbonFootprint } =
       parsed.data;
 
     const slug = generateSlug(name);
@@ -165,7 +169,11 @@ export async function POST(request: Request) {
         price,
         stock,
         isActive: true,
-      })
+        isEcoFriendly: isEcoFriendly ?? false,
+        ecoLabel: (ecoLabel ?? null) as "FRESH" | "ECONOMICAL" | "POPULAR" | null,
+        ecoTooltip: ecoTooltip ?? null,
+        carbonFootprint: carbonFootprint ? Number(carbonFootprint) : null,
+      } as never)
       .returning();
 
     if (imageUrls && imageUrls.length > 0) {

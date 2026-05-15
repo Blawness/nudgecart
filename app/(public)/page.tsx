@@ -14,6 +14,8 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { ValueProposition } from "@/components/shared/ValueProposition";
 import { AppDownloadBanner } from "@/components/shared/AppDownloadBanner";
 import { Search } from "lucide-react";
+import { RecommendationSection } from "@/components/nudge/RecommendationSection";
+import { auth } from "@/lib/auth";
 
 interface HomePageProps {
   searchParams: Promise<{ q?: string }>;
@@ -21,6 +23,8 @@ interface HomePageProps {
 
 export default async function HomePage({ searchParams }: HomePageProps) {
   const { q } = await searchParams;
+  const session = await auth();
+  const userName = session?.user?.name ?? "Kamu";
 
   const allProducts = await db
     .select({
@@ -96,6 +100,13 @@ export default async function HomePage({ searchParams }: HomePageProps) {
           ) : (
             <ProductGrid products={filteredProducts} />
           )}
+        </div>
+      </section>
+
+      {/* Recommendation Sections */}
+      <section className="bg-white px-4 pt-3 pb-6 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <RecommendationSection userName={userName} />
         </div>
       </section>
 

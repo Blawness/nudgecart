@@ -71,7 +71,7 @@ export default function RegisterPage() {
 
       toast.success("Akun berhasil dibuat");
       router.refresh();
-      router.push("/");
+      router.push("/onboarding");
     } catch {
       toast.error("Terjadi kesalahan. Silakan coba lagi.");
     } finally {
@@ -85,7 +85,7 @@ export default function RegisterPage() {
         <CardHeader>
           <CardTitle>Daftar</CardTitle>
           <CardDescription>
-            Buat akun Pasarku kamu
+            Buat akun NudgeCart kamu
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>

@@ -1,13 +1,15 @@
+import { DefaultSession } from "next-auth";
 import { UserRole } from "./index";
 
 declare module "next-auth" {
   interface User {
+    id: string;
     role?: UserRole;
   }
 
   interface Session {
     user: {
-      id?: string;
+      id: string;
       role?: UserRole;
     } & DefaultSession["user"];
   }

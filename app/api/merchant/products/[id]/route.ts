@@ -16,6 +16,10 @@ const updateProductSchema = z.object({
   stock: z.number().min(0).optional(),
   categoryId: z.string().min(1).optional(),
   isActive: z.boolean().optional(),
+  isEcoFriendly: z.boolean().optional(),
+  ecoLabel: z.string().optional(),
+  ecoTooltip: z.string().optional(),
+  carbonFootprint: z.union([z.number(), z.string()]).optional(),
   imageUrls: z.array(z.string()).optional(),
 });
 
@@ -77,12 +81,20 @@ export async function PUT(
       );
     }
 
-    const { imageUrls, ...updateFields } = parsed.data;
+    const { imageUrls, carbonFootprint, ...restFields } = parsed.data;
+    const updateFields = {
+      ...restFields,
+      carbonFootprint: carbonFootprint
+        ? typeof carbonFootprint === "string"
+          ? Number(carbonFootprint)
+          : carbonFootprint
+        : undefined,
+    };
 
     if (Object.keys(updateFields).length > 0) {
       await db
         .update(products)
-        .set({ ...updateFields, updatedAt: new Date() })
+        .set({ ...updateFields, updatedAt: new Date() } as never)
         .where(
           and(
             eq(products.id, id),

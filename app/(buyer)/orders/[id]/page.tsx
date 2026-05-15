@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { NudgePostPurchase } from "@/components/nudge/NudgePostPurchase";
 import { formatRupiah } from "@/lib/utils";
 import type { OrderStatus } from "@/types";
 
@@ -52,7 +53,7 @@ interface OrderDetail {
 const bankInfo = {
   bank: "BCA",
   accountNumber: "1234567890",
-  accountName: "PT Pasarku Indonesia",
+  accountName: "PT NudgeCart Indonesia",
 };
 
 function OrderDetailContent() {
@@ -282,6 +283,17 @@ function OrderDetailContent() {
               ? "Membatalkan..."
               : "Batalkan Pesanan"}
           </Button>
+        )}
+
+        {data && data.status !== "CANCELLED" && (
+          <NudgePostPurchase
+            headline="Terima kasih!"
+            body="Dengan memilih produk ini, kamu telah berkontribusi untuk lingkungan yang lebih baik."
+            ctaText="Lihat Rekomendasi"
+            ecoCount={0}
+            recommendations={[]}
+            showConfetti={data.status === "DELIVERED"}
+          />
         )}
       </div>
     </div>

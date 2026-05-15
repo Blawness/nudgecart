@@ -87,7 +87,7 @@ export default function MerchantRegisterPage() {
         <CardHeader>
           <CardTitle>Daftar sebagai Merchant</CardTitle>
           <CardDescription>
-            Buka toko kamu di Pasarku
+            Buka toko kamu di NudgeCart
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>

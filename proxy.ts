@@ -17,7 +17,8 @@ export default auth(async (req) => {
     nextUrl.pathname.startsWith("/cart") ||
     nextUrl.pathname.startsWith("/checkout") ||
     nextUrl.pathname.startsWith("/orders") ||
-    nextUrl.pathname.startsWith("/profile");
+    nextUrl.pathname.startsWith("/profile") ||
+    nextUrl.pathname.startsWith("/onboarding");
 
   const isAuthRoute =
     nextUrl.pathname.startsWith("/login") ||

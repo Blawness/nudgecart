@@ -5,8 +5,8 @@ import {
   uuid,
   integer,
   boolean,
-  pgEnum,
   decimal,
+  pgEnum,
   index,
 } from "drizzle-orm/pg-core";
 
@@ -27,6 +27,53 @@ export const orderStatusEnum = pgEnum("order_status", [
 export const paymentMethodEnum = pgEnum("payment_method", [
   "BANK_TRANSFER",
   "COD",
+]);
+
+export const ecoLabelEnum = pgEnum("eco_label", [
+  "FRESH",
+  "ECONOMICAL",
+  "POPULAR",
+]);
+export const socialNormTypeEnum = pgEnum("social_norm_type", [
+  "WEEKLY_BUYERS",
+  "LOCAL_BUYERS",
+]);
+export const lifestyleTypeEnum = pgEnum("lifestyle_type", [
+  "HEMAT",
+  "SEHAT",
+  "ECO",
+]);
+export const shoppingFrequencyEnum = pgEnum("shopping_frequency", [
+  "HARIAN",
+  "MINGGUAN",
+  "BULANAN",
+]);
+export const nudgeTypeEnum = pgEnum("nudge_type", [
+  "JUST_IN_TIME",
+  "PRE_CHECKOUT",
+  "LAST_CHANCE",
+  "POST_PURCHASE",
+  "PROMO_PERSONAL",
+  "RECOMMENDATION",
+]);
+export const nudgeFramingEnum = pgEnum("nudge_framing", [
+  "GAIN",
+  "LOSS",
+  "SOCIAL_NORM",
+]);
+export const nudgeContextEnum = pgEnum("nudge_context", [
+  "HOME",
+  "PRODUCT_DETAIL",
+  "CART",
+  "CHECKOUT",
+  "POST_PURCHASE",
+]);
+export const nudgeEventEnum = pgEnum("nudge_event", [
+  "NUDGE_DISPLAYED",
+  "NUDGE_ACCEPTED",
+  "NUDGE_DISMISSED",
+  "ECO_PURCHASE",
+  "PROMO_PERSONAL_CLICK",
 ]);
 
 export const users = pgTable("users", {
@@ -129,6 +176,11 @@ export const products = pgTable(
     price: integer("price").notNull(),
     stock: integer("stock").notNull().default(0),
     isActive: boolean("is_active").default(true).notNull(),
+    isEcoFriendly: boolean("is_eco_friendly").default(false).notNull(),
+    ecoLabel: ecoLabelEnum("eco_label"),
+    ecoTooltip: text("eco_tooltip"),
+    socialNormType: socialNormTypeEnum("social_norm_type"),
+    carbonFootprint: decimal("carbon_footprint", { precision: 5, scale: 2 }),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
@@ -202,4 +254,46 @@ export const orderItems = pgTable("order_items", {
   productPrice: integer("product_price").notNull(),
   quantity: integer("quantity").notNull(),
   subtotal: integer("subtotal").notNull(),
+});
+
+export const userPreferences = pgTable("user_preferences", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .unique()
+    .references(() => users.id, { onDelete: "cascade" }),
+  favoriteCategories: text("favorite_categories").array().notNull().default([]),
+  lifestyleType: lifestyleTypeEnum("lifestyle_type"),
+  shoppingFrequency: shoppingFrequencyEnum("shopping_frequency"),
+  onboardingCompleted: boolean("onboarding_completed").default(false).notNull(),
+  onboardingSkipped: boolean("onboarding_skipped").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const nudgeLogs = pgTable("nudge_logs", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  sessionId: text("session_id").notNull(),
+  nudgeType: nudgeTypeEnum("nudge_type").notNull(),
+  framingType: nudgeFramingEnum("framing_type"),
+  nudgeContext: nudgeContextEnum("nudge_context").notNull(),
+  productId: uuid("product_id").references(() => products.id),
+  alternativeProductId: uuid("alternative_product_id").references(
+    () => products.id
+  ),
+  event: nudgeEventEnum("event").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const nudgeFeedback = pgTable("nudge_feedback", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  sessionId: text("session_id").notNull(),
+  rating: integer("rating").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });

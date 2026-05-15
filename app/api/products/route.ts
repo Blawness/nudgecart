@@ -61,6 +61,10 @@ export async function GET(request: NextRequest) {
         stock: products.stock,
         description: products.description,
         isActive: products.isActive,
+        isEcoFriendly: products.isEcoFriendly,
+        ecoLabel: products.ecoLabel,
+        carbonFootprint: products.carbonFootprint,
+        socialNormType: products.socialNormType,
         createdAt: products.createdAt,
         category: {
           id: categories.id,

@@ -8,6 +8,9 @@ import { formatRupiah, cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAddToCart } from "@/stores/cartStore";
+import { EcoLabel } from "@/components/nudge/EcoLabel";
+import { SocialNormBadge } from "@/components/nudge/SocialNormBadge";
+import type { EcoLabel as EcoLabelType, SocialNormType } from "@/types";
 
 interface ProductImage {
   id: string;
@@ -34,6 +37,11 @@ interface ProductDetailProps {
       storeName: string;
       logoUrl?: string | null;
     };
+    isEcoFriendly?: boolean;
+    ecoLabel?: string | null;
+    ecoTooltip?: string | null;
+    socialNormType?: string | null;
+    carbonFootprint?: number | null;
   };
 }
 
@@ -126,6 +134,14 @@ export function ProductDetail({ product }: ProductDetailProps) {
               <Badge variant="secondary">{product.category.name}</Badge>
             </Link>
             <h1 className="text-2xl font-bold">{product.name}</h1>
+            {product.isEcoFriendly && product.ecoLabel && (
+              <div className="mt-1">
+                <EcoLabel label={product.ecoLabel as EcoLabelType} tooltip={product.ecoTooltip} />
+              </div>
+            )}
+            {product.isEcoFriendly && product.socialNormType && (
+              <SocialNormBadge type={product.socialNormType as SocialNormType} />
+            )}
             <p className="mt-2 text-xl font-semibold text-primary">
               {formatRupiah(product.price)}
             </p>
@@ -157,6 +173,15 @@ export function ProductDetail({ product }: ProductDetailProps) {
           <p className="text-sm leading-relaxed text-muted-foreground">
             {product.description}
           </p>
+
+          {product.carbonFootprint != null && (
+            <div className="rounded-lg bg-green-50 border border-green-200 p-3">
+              <p className="text-xs text-green-700">
+                🌿 Dengan membeli produk ini, kamu berkontribusi mengurangi{" "}
+                <span className="font-semibold">{product.carbonFootprint} kg</span> emisi karbon.
+              </p>
+            </div>
+          )}
 
           <div className="flex flex-col gap-3 pt-4">
             {!outOfStock && (

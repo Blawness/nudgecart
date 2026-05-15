@@ -47,7 +47,7 @@ export function Navbar() {
             className="flex shrink-0 items-center gap-1.5 text-lg font-extrabold tracking-tight text-primary"
           >
             <ShoppingBag className="size-6" />
-            <span>Pasarku</span>
+            <span>NudgeCart</span>
           </Link>
 
           {/* Search — desktop only */}

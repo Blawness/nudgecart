@@ -85,7 +85,7 @@ export default function LoginPage() {
         <CardHeader>
           <CardTitle>Masuk</CardTitle>
           <CardDescription>
-            Masuk ke akun Pasarku kamu
+            Masuk ke akun NudgeCart kamu
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
