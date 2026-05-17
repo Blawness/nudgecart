@@ -45,6 +45,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
       price: products.price,
       stock: products.stock,
       description: products.description,
+      isEcoFriendly: products.isEcoFriendly,
+      ecoLabel: products.ecoLabel,
+      ecoTooltip: products.ecoTooltip,
+      socialNormType: products.socialNormType,
+      carbonFootprint: products.carbonFootprint,
       category: {
         id: categories.id,
         name: categories.name,
@@ -78,7 +83,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   return (
     <div className="py-6 px-4 sm:px-6 lg:px-8">
-      <ProductDetail product={{ ...product, images }} />
+      <ProductDetail
+        product={{
+          ...product,
+          carbonFootprint: product.carbonFootprint != null ? Number(product.carbonFootprint) : null,
+          images,
+        }}
+      />
     </div>
   );
 }

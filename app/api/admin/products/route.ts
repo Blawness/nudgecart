@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { eq, and, sql } from "drizzle-orm";
+import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import {
   products,
@@ -10,6 +11,12 @@ import {
 
 export async function GET(request: NextRequest) {
   try {
+    const session = await auth();
+    const userRole = (session?.user as unknown as Record<string, unknown>)?.role as string | undefined;
+    if (userRole !== "ADMIN") {
+      return NextResponse.json({ error: "Tidak memiliki akses" }, { status: 403 });
+    }
+
     const { searchParams } = new URL(request.url);
     const q = searchParams.get("q")?.trim() || null;
     const merchantId = searchParams.get("merchant")?.trim() || null;
