@@ -114,35 +114,16 @@ export function HeroBanner() {
                 style={{ minWidth: "100%" }}
               >
                 <Link href={banner.link}>
-                  <div
-                    className="relative flex aspect-[4.5/1] w-full items-center overflow-hidden rounded-xl"
-                    style={{ backgroundColor: banner.bgColor }}
-                  >
+                  <div className="relative aspect-[4.5/1] w-full overflow-hidden rounded-xl">
                     <Image
                       src={banner.imageUrl}
                       alt={banner.title}
                       width={1200}
                       height={260}
                       unoptimized
-                      className="absolute inset-0 h-full w-full object-cover opacity-90"
+                      className="h-full w-full object-cover"
                       priority
                     />
-                    <div className="relative z-10 flex flex-col justify-center px-8 sm:px-12">
-                      <h2
-                        className="text-xl font-bold sm:text-3xl lg:text-4xl"
-                        style={{ color: banner.textColor }}
-                      >
-                        {banner.title}
-                      </h2>
-                      {banner.subtitle && (
-                        <p
-                          className="mt-1 text-sm sm:text-base lg:text-lg"
-                          style={{ color: banner.textColor, opacity: 0.9 }}
-                        >
-                          {banner.subtitle}
-                        </p>
-                      )}
-                    </div>
                   </div>
                 </Link>
               </div>

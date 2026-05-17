@@ -300,12 +300,12 @@ async function seed() {
     userId: buyer.id,
   });
 
-  // Default banners
+  // Default banners (AI-designed images — text is baked into image)
   await db.insert(schema.banners).values([
     {
-      title: "PROMO HEMAT",
-      subtitle: "Diskon hingga 40% untuk sembako segar",
-      imageUrl: "https://o76166p4ua.ufs.sh/f/vujehKPKzjOf21Zt1JH8WCFSw83ZPBtoYrcVOgHu2QL74Nab",
+      title: "Promo Hemat",
+      subtitle: "Diskon hingga 40%",
+      imageUrl: "https://o76166p4ua.ufs.sh/f/vujehKPKzjOfuH2JuHhpT3aimyo7gbUz5uqdFt1XHl2wGJhk",
       link: "/promo",
       bgColor: "#dc2626",
       textColor: "#ffffff",
@@ -313,17 +313,37 @@ async function seed() {
       isActive: true,
     },
     {
-      title: "GRATIS ONGKIR",
-      subtitle: "Pengiriman gratis ke seluruh kota",
-      imageUrl: "https://o76166p4ua.ufs.sh/f/vujehKPKzjOf7zJD6rcLumptj0Wb5BGdODlSga68IRXwizy4",
+      title: "Promo Cashback",
+      subtitle: "Cashback Rp 10.000",
+      imageUrl: "https://o76166p4ua.ufs.sh/f/vujehKPKzjOfC1uouVFduGqKyjOz0tHfbWQxm36eh7w1S5Ic",
       link: "/promo",
-      bgColor: "#ea580c",
+      bgColor: "#16a34a",
       textColor: "#ffffff",
       order: 1,
       isActive: true,
     },
+    {
+      title: "Promo Bundling",
+      subtitle: "Paket hemat keluarga",
+      imageUrl: "https://o76166p4ua.ufs.sh/f/vujehKPKzjOfdE0qq3gYmfxsiuEXJHwjD4KWe957VaP6dkrv",
+      link: "/promo",
+      bgColor: "#2563eb",
+      textColor: "#ffffff",
+      order: 2,
+      isActive: true,
+    },
+    {
+      title: "Gratis Ongkir",
+      subtitle: "Pengiriman gratis",
+      imageUrl: "https://o76166p4ua.ufs.sh/f/vujehKPKzjOfO4BHOn5zYQZeot136mpz2S9kXCqiAv4wJIH8",
+      link: "/promo",
+      bgColor: "#ea580c",
+      textColor: "#ffffff",
+      order: 3,
+      isActive: true,
+    },
   ]);
-  console.log("Created 2 default banners");
+  console.log("Created 4 default banners");
 
   console.log("Seeding complete!");
   process.exit(0);
