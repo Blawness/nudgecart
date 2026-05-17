@@ -1,12 +1,22 @@
 import { config } from "dotenv";
 config({ path: ".env.local" });
 
+import { readFileSync } from "node:fs";
+import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
 import { db } from "@/lib/db";
 import * as schema from "@/drizzle/schema";
 import bcrypt from "bcryptjs";
 
 async function seed() {
   console.log("Seeding database...");
+
+  console.log("Truncating existing data...");
+  await db.execute(
+    "TRUNCATE TABLE cart_items, order_items, product_images, nudge_logs, nudge_feedback, user_preferences, accounts, sessions, orders, carts, addresses, products, merchants, categories, users, verification_tokens CASCADE"
+  );
+  console.log("Truncated all tables.");
 
   const hashedPassword = await bcrypt.hash("password123", 10);
 
@@ -201,6 +211,16 @@ async function seed() {
 
   const categoryMap = new Map(categories.map((c) => [c.slug, c.id]));
 
+  const __dirname = dirname(fileURLToPath(import.meta.url));
+  const imagesJsonPath = resolve(__dirname, "seed-images.json");
+  let productImagesMap: Record<string, string[]> = {};
+  try {
+    productImagesMap = JSON.parse(readFileSync(imagesJsonPath, "utf-8"));
+    console.log("Loaded product images from seed-images.json");
+  } catch {
+    console.log("No seed-images.json found, using placeholder images");
+  }
+
   for (const productData of products) {
     const categoryId = categoryMap.get(productData.categorySlug);
     if (!categoryId) continue;
@@ -219,18 +239,29 @@ async function seed() {
       })
       .returning();
 
-    await db.insert(schema.productImages).values([
-      {
-        productId: product.id,
-        url: `https://picsum.photos/seed/${product.slug}/400/400`,
-        order: 0,
-      },
-      {
-        productId: product.id,
-        url: `https://picsum.photos/seed/${product.slug}-2/400/400`,
-        order: 1,
-      },
-    ]);
+    const customImages = productImagesMap[productData.slug];
+    if (customImages && customImages.length > 0) {
+      await db.insert(schema.productImages).values(
+        customImages.map((url, i) => ({
+          productId: product.id,
+          url,
+          order: i,
+        }))
+      );
+    } else {
+      await db.insert(schema.productImages).values([
+        {
+          productId: product.id,
+          url: `https://picsum.photos/seed/${product.slug}/400/400`,
+          order: 0,
+        },
+        {
+          productId: product.id,
+          url: `https://picsum.photos/seed/${product.slug}-2/400/400`,
+          order: 1,
+        },
+      ]);
+    }
 
     console.log(`  Created product: ${product.name}`);
   }
