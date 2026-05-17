@@ -207,6 +207,30 @@ async function seed() {
       stock: 55,
       categorySlug: "bumbu-dapur",
     },
+    {
+      name: "Minyak Goreng",
+      slug: "minyak-goreng-toko-segar",
+      description: "Minyak goreng sawit 1 liter, jernih dan berkualitas.",
+      price: 18000,
+      stock: 40,
+      categorySlug: "bumbu-dapur",
+    },
+    {
+      name: "Udang Segar",
+      slug: "udang-segar-toko-segar",
+      description: "Udang segar ukuran sedang, 500gr.",
+      price: 45000,
+      stock: 20,
+      categorySlug: "daging-ikan",
+    },
+    {
+      name: "Telur Ayam",
+      slug: "telur-ayam-toko-segar",
+      description: "Telur ayam negeri segar, 1kg isi 15-16 butir.",
+      price: 25000,
+      stock: 60,
+      categorySlug: "daging-ikan",
+    },
   ];
 
   const categoryMap = new Map(categories.map((c) => [c.slug, c.id]));
