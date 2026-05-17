@@ -38,7 +38,7 @@ export function useForm<TData extends Record<string, unknown>>(
           return
         }
         setErrors({})
-        onValid(result.data as Record<string, unknown>)
+        onValid(result.data as unknown as Record<string, unknown>)
       },
     [schema, values]
   )

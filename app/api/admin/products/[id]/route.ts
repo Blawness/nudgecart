@@ -22,7 +22,7 @@ export async function GET(
 ) {
   try {
     const session = await auth();
-    const userRole = (session?.user as Record<string, unknown>)?.role as string | undefined;
+    const userRole = (session?.user as unknown as Record<string, unknown>)?.role as string | undefined;
 
     if (userRole !== "ADMIN") {
       return NextResponse.json({ error: "Tidak memiliki akses" }, { status: 403 });
@@ -78,7 +78,7 @@ export async function PUT(
 ) {
   try {
     const session = await auth();
-    const userRole = (session?.user as Record<string, unknown>)?.role as string | undefined;
+    const userRole = (session?.user as unknown as Record<string, unknown>)?.role as string | undefined;
 
     if (userRole !== "ADMIN") {
       return NextResponse.json({ error: "Tidak memiliki akses" }, { status: 403 });

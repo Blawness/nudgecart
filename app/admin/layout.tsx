@@ -8,7 +8,7 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
-  const userRole = (session?.user as Record<string, unknown>)?.role as
+  const userRole = (session?.user as unknown as Record<string, unknown>)?.role as
     | string
     | undefined;
 

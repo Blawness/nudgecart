@@ -7,7 +7,7 @@ export default auth(async (req) => {
   const session = req.auth;
 
   const isLoggedIn = !!session?.user;
-  const userRole = (session?.user as Record<string, unknown>)?.role as
+  const userRole = (session?.user as unknown as Record<string, unknown>)?.role as
     | string
     | undefined;
 

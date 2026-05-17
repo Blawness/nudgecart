@@ -17,7 +17,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Silakan login terlebih dahulu" }, { status: 401 });
     }
 
-    const role = (session.user as Record<string, unknown>).role;
+    const role = (session.user as unknown as Record<string, unknown>).role;
     if (role !== "BUYER") {
       return NextResponse.json({ error: "Hanya pembeli yang dapat menambah ke keranjang" }, { status: 403 });
     }

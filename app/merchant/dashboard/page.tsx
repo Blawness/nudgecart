@@ -9,7 +9,7 @@ import type { MerchantStatsData } from "@/components/merchant/MerchantStats";
 export default async function DashboardPage() {
   const session = await auth();
   const userId = session?.user?.id;
-  const role = (session?.user as Record<string, unknown>)?.role as
+  const role = (session?.user as unknown as Record<string, unknown>)?.role as
     | string
     | undefined;
 

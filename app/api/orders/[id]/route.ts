@@ -41,7 +41,7 @@ export async function GET(
       return NextResponse.json({ error: "Pesanan tidak ditemukan" }, { status: 404 });
     }
 
-    const role = (session.user as Record<string, unknown>).role;
+    const role = (session.user as unknown as Record<string, unknown>).role;
 
     if (
       order.userId !== session.user.id &&

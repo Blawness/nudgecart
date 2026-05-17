@@ -8,7 +8,7 @@ export default async function MerchantLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
-  const role = (session?.user as Record<string, unknown>)?.role as
+  const role = (session?.user as unknown as Record<string, unknown>)?.role as
     | string
     | undefined;
 

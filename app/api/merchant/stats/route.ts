@@ -7,7 +7,7 @@ import { merchants, products, orders } from "@/drizzle/schema";
 export async function GET() {
   try {
     const session = await auth();
-    const role = (session?.user as Record<string, unknown>)?.role as
+    const role = (session?.user as unknown as Record<string, unknown>)?.role as
       | string
       | undefined;
     const userId = session?.user?.id;

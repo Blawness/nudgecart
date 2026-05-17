@@ -9,7 +9,7 @@ export function useAuth() {
   return {
     user: user ?? null,
     userId: user?.id ?? null,
-    role: (user as Record<string, unknown> | undefined)?.role as string | null,
+    role: (user as unknown as Record<string, unknown> | undefined)?.role as string | null,
     isAuthenticated: status === "authenticated",
     isLoading: status === "loading",
     signOut: () => signOut({ callbackUrl: "/" }),
