@@ -1,9 +1,12 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { X, ImageIcon } from "lucide-react";
+import { UploadDropzone } from "@/lib/uploadthing-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -217,39 +220,70 @@ export function AdminProductForm({ product, categories }: AdminProductFormProps)
         </FormField>
 
         <div className="space-y-3">
-          <label className="text-sm font-medium">Gambar Produk (URL)</label>
-          {imageUrls.map((url, i) => (
-            <div key={i} className="flex gap-2">
-              <Input
-                placeholder={`URL Gambar ${i + 1}`}
-                value={url}
-                onChange={(e) => updateImageUrl(i, e.target.value)}
-                className="flex-1"
-              />
-              {imageUrls.length > 1 && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => removeImageUrl(i)}
-                  className="shrink-0"
-                >
-                  Hapus
-                </Button>
+          <label className="text-sm font-medium">Gambar Produk</label>
+
+          {imageUrls.filter(Boolean).length > 0 && (
+            <div className="grid grid-cols-3 gap-2">
+              {imageUrls.map(
+                (url, i) =>
+                  url && (
+                    <div key={i} className="relative aspect-square rounded-lg overflow-hidden border bg-muted group">
+                      <Image
+                        src={url}
+                        alt={`Gambar ${i + 1}`}
+                        fill
+                        unoptimized
+                        className="object-cover"
+                        sizes="33vw"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImageUrl(i)}
+                        className="absolute top-1 right-1 size-5 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="size-3" />
+                      </button>
+                    </div>
+                  )
               )}
             </div>
-          ))}
-          {imageUrls.length < 5 && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setImageUrls((prev) => [...prev, ""])}
-            >
-              + Tambah Gambar
-            </Button>
           )}
-          <p className="text-xs text-muted-foreground">Maksimal 5 gambar</p>
+
+          {imageUrls.filter(Boolean).length < 5 && (
+            <UploadDropzone
+              endpoint="productImage"
+              onClientUploadComplete={(res) => {
+                const newUrls = res.map((f) => f.url)
+                setImageUrls((prev) => {
+                  const filtered = prev.filter(Boolean)
+                  return [...filtered, ...newUrls].slice(0, 5)
+                })
+                toast.success("Gambar berhasil diupload")
+              }}
+              onUploadError={(error) => {
+                toast.error(error.message)
+              }}
+            />
+          )}
+
+          <p className="text-xs text-muted-foreground">
+            Upload atau paste URL gambar (maksimal 5)
+          </p>
+
+          <div className="flex gap-2">
+            <Input
+              placeholder="Atau paste URL gambar..."
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault()
+                  const val = e.currentTarget.value.trim()
+                  if (!val) return
+                  setImageUrls((prev) => [...prev.filter(Boolean), val].slice(0, 5))
+                  e.currentTarget.value = ""
+                }
+              }}
+            />
+          </div>
         </div>
 
         <div className="flex gap-3 pt-4">

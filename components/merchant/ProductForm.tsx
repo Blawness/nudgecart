@@ -1,9 +1,12 @@
 "use client"
 
 import React from "react"
+import Image from "next/image"
 import { z } from "zod"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import { X, ImageIcon } from "lucide-react"
+import { UploadDropzone } from "@/lib/uploadthing-client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -295,19 +298,88 @@ export function ProductForm({ product, categories }: ProductFormProps) {
         )}
       </div>
 
-      <div className="flex flex-col gap-2">
-        <span className="text-sm font-medium">Gambar Produk (URL)</span>
-        {imageUrls.map((url, i) => (
-          <Input
-            key={i}
-            placeholder={`URL Gambar ${i + 1}`}
-            value={url}
-            onChange={(e) => updateImageUrl(i, e.target.value)}
+      <div className="flex flex-col gap-3">
+        <span className="text-sm font-medium">Gambar Produk</span>
+
+        {imageUrls.filter(Boolean).length > 0 && (
+          <div className="grid grid-cols-3 gap-2">
+            {imageUrls.map(
+              (url, i) =>
+                url && (
+                  <div key={i} className="relative aspect-square rounded-lg overflow-hidden border bg-muted group">
+                    <Image
+                      src={url}
+                      alt={`Gambar ${i + 1}`}
+                      fill
+                      unoptimized
+                      className="object-cover"
+                      sizes="33vw"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => updateImageUrl(i, "")}
+                      className="absolute top-1 right-1 size-5 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="size-3" />
+                    </button>
+                  </div>
+                )
+            )}
+          </div>
+        )}
+
+        {imageUrls.filter(Boolean).length < 5 && (
+          <UploadDropzone
+            endpoint="productImage"
+            onClientUploadComplete={(res) => {
+              const newUrls = res.map((f) => f.url)
+              const emptyIndex = imageUrls.findIndex((u) => !u)
+              if (emptyIndex >= 0) {
+                const next = [...imageUrls]
+                newUrls.forEach((url, i) => {
+                  if (emptyIndex + i < next.length) {
+                    next[emptyIndex + i] = url
+                  } else {
+                    next.push(url)
+                  }
+                })
+                setImageUrls(next.slice(0, 5))
+              } else {
+                setImageUrls((prev) =>
+                  [...prev, ...newUrls].slice(0, 5)
+                )
+              }
+              toast.success("Gambar berhasil diupload")
+            }}
+            onUploadError={(error) => {
+              toast.error(error.message)
+            }}
           />
-        ))}
+        )}
+
         <p className="text-xs text-muted-foreground">
-          Masukkan URL gambar (maksimal 5)
+          Upload atau paste URL gambar (maksimal 5)
         </p>
+
+        <div className="flex gap-2">
+          <Input
+            placeholder="Atau paste URL gambar..."
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault()
+                const val = e.currentTarget.value.trim()
+                if (!val) return
+                const emptyIndex = imageUrls.findIndex((u) => !u)
+                if (emptyIndex >= 0) {
+                  updateImageUrl(emptyIndex, val)
+                } else if (imageUrls.length < 5) {
+                  setImageUrls((prev) => [...prev, val])
+                }
+                e.currentTarget.value = ""
+              }
+            }}
+          />
+        </div>
       </div>
 
       <Button type="submit" disabled={isSubmitting} className="w-full">
