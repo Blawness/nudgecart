@@ -4,49 +4,49 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Pencil } from "lucide-react";
+import { useSession } from "next-auth/react";
 
-const banners = [
-  {
-    id: 1,
-    image: "https://placehold.co/1200x260/dc2626/ffffff?text=CASHBACK+Rp+10.000",
-    alt: "Promo Cashback Rp 10.000",
-  },
-  {
-    id: 2,
-    image: "https://placehold.co/1200x260/ea580c/ffffff?text=PROMO+JSM",
-    alt: "Promo JSM",
-  },
-  {
-    id: 3,
-    image: "https://placehold.co/1200x260/dc2626/ffffff?text=GRATIS+ONGKIR",
-    alt: "Gratis Ongkir",
-  },
-  {
-    id: 4,
-    image: "https://placehold.co/1200x260/ea580c/ffffff?text=DISKON+40%25",
-    alt: "Diskon 40%",
-  },
-  {
-    id: 5,
-    image: "https://placehold.co/1200x260/dc2626/ffffff?text=PROMO+HEMAT",
-    alt: "Promo Hemat",
-  },
-];
+interface Banner {
+  id: string;
+  title: string;
+  subtitle: string | null;
+  imageUrl: string;
+  link: string;
+  bgColor: string;
+  textColor: string;
+}
 
 export function HeroBanner() {
   const [current, setCurrent] = useState(0);
   const [startX, setStartX] = useState<number | null>(null);
+  const [banners, setBanners] = useState<Banner[]>([]);
+  const { data: session } = useSession();
+  const isAdmin = (session?.user as unknown as Record<string, unknown>)?.role === "ADMIN";
+
+  useEffect(() => {
+    fetch("/api/banners")
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.data && json.data.length > 0) {
+          setBanners(json.data);
+        }
+      })
+      .catch(() => {
+        // fallback: empty banners
+      });
+  }, []);
 
   const next = useCallback(
-    () => setCurrent((c) => (c + 1) % banners.length),
-    []
+    () => setCurrent((c) => (c + 1) % Math.max(banners.length, 1)),
+    [banners.length]
   );
 
   useEffect(() => {
+    if (banners.length === 0) return;
     const timer = setInterval(next, 4000);
     return () => clearInterval(timer);
-  }, [next]);
+  }, [next, banners.length]);
 
   const handlePointerDown = (e: React.PointerEvent) => setStartX(e.clientX);
   const handlePointerUp = (e: React.PointerEvent) => {
@@ -65,20 +65,36 @@ export function HeroBanner() {
   const goTo = (index: number) => setCurrent(index);
   const goPrev = () =>
     setCurrent((c) => (c - 1 + banners.length) % banners.length);
-  const goNext = () => setCurrent((c) => (c + 1) % banners.length);
+  const goNext = () =>
+    setCurrent((c) => (c + 1) % banners.length);
+
+  if (banners.length === 0) {
+    return null;
+  }
 
   return (
     <section className="bg-white pt-6 pb-2">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-3 flex items-center justify-between">
           <div />
-          <Link
-            href="/promo"
-            className="flex items-center gap-0.5 text-sm font-medium text-primary hover:underline"
-          >
-            Lihat Semua
-            <ChevronRight className="size-4" />
-          </Link>
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Link
+                href="/admin/banners"
+                className="flex items-center gap-1 text-xs font-medium text-gray-500 hover:text-primary"
+              >
+                <Pencil className="size-3" />
+                Edit Banner
+              </Link>
+            )}
+            <Link
+              href="/promo"
+              className="flex items-center gap-0.5 text-sm font-medium text-primary hover:underline"
+            >
+              Lihat Semua
+              <ChevronRight className="size-4" />
+            </Link>
+          </div>
         </div>
 
         <div
@@ -97,15 +113,38 @@ export function HeroBanner() {
                 className="relative w-full shrink-0"
                 style={{ minWidth: "100%" }}
               >
-                <Image
-                  src={banner.image}
-                  alt={banner.alt}
-                  width={1200}
-                  height={260}
-                  unoptimized
-                  className="aspect-[4.5/1] w-full rounded-xl object-cover"
-                  priority={banner.id === 1}
-                />
+                <Link href={banner.link}>
+                  <div
+                    className="relative flex aspect-[4.5/1] w-full items-center overflow-hidden rounded-xl"
+                    style={{ backgroundColor: banner.bgColor }}
+                  >
+                    <Image
+                      src={banner.imageUrl}
+                      alt={banner.title}
+                      width={1200}
+                      height={260}
+                      unoptimized
+                      className="absolute inset-0 h-full w-full object-cover opacity-90"
+                      priority
+                    />
+                    <div className="relative z-10 flex flex-col justify-center px-8 sm:px-12">
+                      <h2
+                        className="text-xl font-bold sm:text-3xl lg:text-4xl"
+                        style={{ color: banner.textColor }}
+                      >
+                        {banner.title}
+                      </h2>
+                      {banner.subtitle && (
+                        <p
+                          className="mt-1 text-sm sm:text-base lg:text-lg"
+                          style={{ color: banner.textColor, opacity: 0.9 }}
+                        >
+                          {banner.subtitle}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </Link>
               </div>
             ))}
           </div>

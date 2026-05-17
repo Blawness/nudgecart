@@ -15,6 +15,13 @@
       "when": 1778856387300,
       "tag": "0001_luxuriant_flatman",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779021681797,
+      "tag": "0002_opposite_hobgoblin",
+      "breakpoints": true
     }
   ]
 }

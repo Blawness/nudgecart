@@ -160,6 +160,20 @@ export const categories = pgTable("categories", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const banners = pgTable("banners", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  title: text("title").notNull(),
+  subtitle: text("subtitle"),
+  imageUrl: text("image_url").notNull(),
+  link: text("link").default("/promo"),
+  bgColor: text("bg_color").default("#dc2626"),
+  textColor: text("text_color").default("#ffffff"),
+  order: integer("order").default(0).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const products = pgTable(
   "products",
   {

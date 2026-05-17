@@ -300,6 +300,31 @@ async function seed() {
     userId: buyer.id,
   });
 
+  // Default banners
+  await db.insert(schema.banners).values([
+    {
+      title: "PROMO HEMAT",
+      subtitle: "Diskon hingga 40% untuk sembako segar",
+      imageUrl: "https://o76166p4ua.ufs.sh/f/vujehKPKzjOf21Zt1JH8WCFSw83ZPBtoYrcVOgHu2QL74Nab",
+      link: "/promo",
+      bgColor: "#dc2626",
+      textColor: "#ffffff",
+      order: 0,
+      isActive: true,
+    },
+    {
+      title: "GRATIS ONGKIR",
+      subtitle: "Pengiriman gratis ke seluruh kota",
+      imageUrl: "https://o76166p4ua.ufs.sh/f/vujehKPKzjOf7zJD6rcLumptj0Wb5BGdODlSga68IRXwizy4",
+      link: "/promo",
+      bgColor: "#ea580c",
+      textColor: "#ffffff",
+      order: 1,
+      isActive: true,
+    },
+  ]);
+  console.log("Created 2 default banners");
+
   console.log("Seeding complete!");
   process.exit(0);
 }
