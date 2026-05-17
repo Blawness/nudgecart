@@ -28,7 +28,7 @@ async function seed() {
   const [admin] = await db
     .insert(schema.users)
     .values({
-      name: "Admin Pasarku",
+      name: "Admin NudgeCart",
       email: "admin@pasarku.id",
       passwordHash: hashedPassword,
       role: "ADMIN",

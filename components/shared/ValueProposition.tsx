@@ -16,7 +16,7 @@ const benefits = [
   {
     icon: Award,
     title: "Poin Terintegrasi",
-    description: "Dapatkan poin untuk setiap pembelanjaan di Pasarku",
+    description: "Dapatkan poin untuk setiap pembelanjaan di NudgeCart",
   },
   {
     icon: Package,
@@ -30,7 +30,7 @@ export function ValueProposition() {
     <section className="bg-primary py-10">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <h2 className="mb-8 text-center text-lg font-bold text-white">
-          Yuk, belanja di Pasarku dan Dapatkan Keuntungannya!
+          Yuk, belanja di NudgeCart dan Dapatkan Keuntungannya!
         </h2>
         <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
           {benefits.map((item) => (

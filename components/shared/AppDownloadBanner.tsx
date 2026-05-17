@@ -9,7 +9,7 @@ export function AppDownloadBanner() {
         <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
           <div className="text-center md:text-left">
             <h2 className="text-xl font-extrabold text-white md:text-2xl">
-              Download Pasarku Sekarang!
+              Download NudgeCart Sekarang!
             </h2>
             <p className="mt-1 text-sm text-white/80">
               Lebih banyak pilihan produk & promo

@@ -35,11 +35,11 @@ export function Footer() {
 
           {/* Jelajahi */}
           <div>
-            <h3 className="mb-3 text-sm font-bold text-gray-900">Jelajahi Pasarku</h3>
+            <h3 className="mb-3 text-sm font-bold text-gray-900">Jelajahi NudgeCart</h3>
             <ul className="space-y-2 text-sm text-gray-600">
               <li>
                 <Link href="/about" className="hover:text-primary">
-                  Tentang Pasarku
+                  Tentang NudgeCart
                 </Link>
               </li>
               <li>
@@ -120,7 +120,7 @@ export function Footer() {
             <ul className="space-y-1 text-sm text-gray-600">
               <li className="flex items-center gap-1.5">
                 <Mail className="size-3.5" />
-                <span>care@pasarku.id</span>
+                <span>care@nudgecart.id</span>
               </li>
               <li className="flex items-center gap-1.5">
                 <Phone className="size-3.5" />
@@ -153,7 +153,7 @@ export function Footer() {
             </a>
           </div>
           <p className="text-xs text-gray-500">
-            &copy; 2026 Pasarku. PT Sumber Pasarku. All rights reserved.
+            &copy; 2026 NudgeCart. PT Sumber NudgeCart. All rights reserved.
           </p>
         </div>
       </div>
