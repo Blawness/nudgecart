@@ -2,9 +2,24 @@ import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+function getBaseUrl(req: NextRequest): string {
+  // Vercel sets x-forwarded-host and x-forwarded-proto
+  const forwardedHost = req.headers.get("x-forwarded-host");
+  const forwardedProto = req.headers.get("x-forwarded-proto");
+  if (forwardedHost && forwardedProto) {
+    return `${forwardedProto}://${forwardedHost}`;
+  }
+  // Fallback to NEXTAUTH_URL or nextUrl origin
+  if (process.env.NEXTAUTH_URL) {
+    return process.env.NEXTAUTH_URL;
+  }
+  return req.nextUrl.origin;
+}
+
 export default auth(async (req) => {
   const { nextUrl } = req;
   const session = req.auth;
+  const baseUrl = getBaseUrl(req);
 
   const isLoggedIn = !!session?.user;
   const userRole = (session?.user as unknown as Record<string, unknown>)?.role as
@@ -26,27 +41,27 @@ export default auth(async (req) => {
 
   if (isAuthRoute && isLoggedIn) {
     if (userRole === "MERCHANT")
-      return NextResponse.redirect(new URL("/merchant/dashboard", nextUrl));
+      return NextResponse.redirect(new URL("/merchant/dashboard", baseUrl));
     if (userRole === "ADMIN")
-      return NextResponse.redirect(new URL("/admin", nextUrl));
-    return NextResponse.redirect(new URL("/", nextUrl));
+      return NextResponse.redirect(new URL("/admin", baseUrl));
+    return NextResponse.redirect(new URL("/", baseUrl));
   }
 
   if (isAdminRoute) {
     if (!isLoggedIn || userRole !== "ADMIN") {
-      return NextResponse.redirect(new URL("/login", nextUrl));
+      return NextResponse.redirect(new URL("/login", baseUrl));
     }
   }
 
   if (isMerchantRoute) {
     if (!isLoggedIn || userRole !== "MERCHANT") {
-      return NextResponse.redirect(new URL("/login", nextUrl));
+      return NextResponse.redirect(new URL("/login", baseUrl));
     }
   }
 
   if (isBuyerRoute) {
     if (!isLoggedIn) {
-      return NextResponse.redirect(new URL("/login", nextUrl));
+      return NextResponse.redirect(new URL("/login", baseUrl));
     }
   }
 
