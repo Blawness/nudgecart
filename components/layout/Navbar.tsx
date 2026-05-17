@@ -3,7 +3,6 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
-import { useQuery } from "@tanstack/react-query";
 import { ShoppingCart, Search, User, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,28 +13,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useCart } from "@/hooks/useCart";
 
 export function Navbar() {
   const router = useRouter();
   const { data: session, status } = useSession();
   const role = session?.user?.role;
 
-  const { data: cartData } = useQuery({
-    queryKey: ["cart"],
-    queryFn: async () => {
-      const res = await fetch("/api/cart");
-      if (!res.ok) return null;
-      const json = await res.json();
-      return json.data;
-    },
-    enabled: !!session,
-  });
+  const { items } = useCart({ enabled: !!session });
 
-  const cartCount =
-    (cartData?.items as Array<{ quantity: number }> | undefined)?.reduce(
-      (sum, item) => sum + item.quantity,
-      0
-    ) ?? 0;
+  const cartCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <nav className="sticky top-0 z-40 w-full border-b border-gray-100 bg-white shadow-sm">

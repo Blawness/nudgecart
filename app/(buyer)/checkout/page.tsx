@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ShoppingBag, ChevronLeft } from "lucide-react";
@@ -17,6 +17,7 @@ import { PaymentMethodPicker } from "@/components/checkout/PaymentMethodPicker";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { NudgeStaticBlock } from "@/components/nudge/NudgeStaticBlock";
 import { formatRupiah } from "@/lib/utils";
+import { useCart } from "@/hooks/useCart";
 import type { PaymentMethod } from "@/types";
 
 interface CheckoutCartItem {
@@ -29,11 +30,6 @@ interface CheckoutCartItem {
   quantity: number;
   merchantId: string;
   merchantName: string;
-}
-
-interface CartResponse {
-  id: string;
-  items: CheckoutCartItem[];
 }
 
 interface MerchantGroup {
@@ -49,17 +45,7 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
   const [note, setNote] = useState("");
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["cart"],
-    queryFn: async () => {
-      const res = await fetch("/api/cart");
-      if (!res.ok) throw new Error("Gagal memuat keranjang");
-      const json = await res.json();
-      return json.data as CartResponse;
-    },
-  });
-
-  const items = data?.items ?? [];
+  const { items, isLoading } = useCart();
 
   const groups: MerchantGroup[] = (() => {
     const map = new Map<string, MerchantGroup>();

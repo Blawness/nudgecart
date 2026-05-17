@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { orders, orderItems, merchants } from "@/drizzle/schema";
+import { orders, orderItems, products, merchants } from "@/drizzle/schema";
 
 export async function PUT(
   _request: Request,
@@ -41,11 +41,30 @@ export async function PUT(
       );
     }
 
-    const [updated] = await db
-      .update(orders)
-      .set({ status: "CANCELLED", updatedAt: new Date() })
-      .where(eq(orders.id, id))
-      .returning();
+    const [updated] = await db.transaction(async (tx) => {
+      const [cancelled] = await tx
+        .update(orders)
+        .set({ status: "CANCELLED", updatedAt: new Date() })
+        .where(eq(orders.id, id))
+        .returning();
+
+      const items = await tx
+        .select({
+          productId: orderItems.productId,
+          quantity: orderItems.quantity,
+        })
+        .from(orderItems)
+        .where(eq(orderItems.orderId, id));
+
+      for (const item of items) {
+        await tx
+          .update(products)
+          .set({ stock: sql`${products.stock} + ${item.quantity}` })
+          .where(eq(products.id, item.productId));
+      }
+
+      return [cancelled];
+    });
 
     const items = await db
       .select({

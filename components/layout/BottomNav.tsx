@@ -4,8 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, LayoutGrid, MessageCircle, ShoppingCart, User } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
+import { useCart } from "@/hooks/useCart";
 
 interface Tab {
   label: string;
@@ -27,22 +27,9 @@ export function BottomNav() {
   const pathname = usePathname();
   const { data: session } = useSession();
 
-  const { data: cartData } = useQuery({
-    queryKey: ["cart"],
-    queryFn: async () => {
-      const res = await fetch("/api/cart");
-      if (!res.ok) return null;
-      const json = await res.json();
-      return json.data;
-    },
-    enabled: !!session,
-  });
+  const { items } = useCart({ enabled: !!session });
 
-  const cartCount =
-    (cartData?.items as Array<{ quantity: number }> | undefined)?.reduce(
-      (sum, item) => sum + item.quantity,
-      0
-    ) ?? 0;
+  const cartCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 sm:hidden bg-white border-t border-gray-100 shadow-[0_-2px_12px_rgba(0,0,0,0.06)]">

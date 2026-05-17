@@ -1,6 +1,5 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import { ShoppingCart } from "lucide-react";
 import Link from "next/link";
 
@@ -15,30 +14,14 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { useCartDrawer } from "@/stores/cartStore";
-import { CartItem, type CartItemData } from "./CartItem";
+import { useCart } from "@/hooks/useCart";
+import { CartItem } from "./CartItem";
 import { CartSummary } from "./CartSummary";
-
-interface CartResponse {
-  items: CartItemData[];
-  shippingFee: number;
-}
 
 export function CartDrawer() {
   const { isOpen, open, close } = useCartDrawer();
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["cart"],
-    queryFn: async () => {
-      const res = await fetch("/api/cart");
-      if (!res.ok) throw new Error("Gagal memuat keranjang");
-      const json = await res.json();
-      return json.data as CartResponse;
-    },
-    enabled: isOpen,
-  });
-
-  const items = data?.items ?? [];
-  const shippingFee = data?.shippingFee ?? 10000;
+  const { items, shippingFee, isLoading } = useCart({ enabled: isOpen });
 
   return (
     <Sheet open={isOpen} onOpenChange={(v) => (v ? open() : close())}>

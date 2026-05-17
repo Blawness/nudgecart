@@ -10,14 +10,16 @@ interface CartItemData {
   stock: number;
   imageUrl: string;
   quantity: number;
+  merchantId: string;
+  merchantName: string;
 }
 
 interface CartResponse {
+  id: string;
   items: CartItemData[];
-  shippingFee: number;
 }
 
-export function useCart() {
+export function useCart({ enabled = true }: { enabled?: boolean } = {}) {
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
@@ -28,6 +30,7 @@ export function useCart() {
       const json = await res.json();
       return json.data as CartResponse;
     },
+    enabled,
   });
 
   const addToCart = useMutation({
@@ -96,7 +99,7 @@ export function useCart() {
 
   return {
     items: data?.items ?? [],
-    shippingFee: data?.shippingFee ?? 10000,
+    shippingFee: 10000,
     isLoading,
     addToCart,
     updateQuantity,

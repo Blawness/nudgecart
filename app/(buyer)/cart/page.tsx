@@ -1,33 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { ShoppingCart } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { CartItem, type CartItemData } from "@/components/cart/CartItem";
+import { CartItem } from "@/components/cart/CartItem";
 import { CartSummary } from "@/components/cart/CartSummary";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { NudgeInlineBanner } from "@/components/nudge/NudgeInlineBanner";
+import { useCart } from "@/hooks/useCart";
 import { useNudge } from "@/hooks/useNudge";
 
-interface CartResponse {
-  id: string;
-  items: CartItemData[];
-}
-
 export default function CartPage() {
-  const { data, isLoading } = useQuery({
-    queryKey: ["cart"],
-    queryFn: async () => {
-      const res = await fetch("/api/cart");
-      if (!res.ok) throw new Error("Gagal memuat keranjang");
-      const json = await res.json();
-      return json.data as CartResponse;
-    },
-  });
+  const { items, isLoading } = useCart();
 
   const { evaluateNudge, logEvent, userId, incrementInteraction } = useNudge();
   const [nudgeContent, setNudgeContent] = useState<{
@@ -37,8 +24,6 @@ export default function CartPage() {
     nudgeType: string;
     framingType: string | null;
   } | null>(null);
-
-  const items = data?.items ?? [];
 
   useEffect(() => {
     if (userId && items.length > 0 && !nudgeContent) {
