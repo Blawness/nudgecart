@@ -28,7 +28,6 @@ interface NudgeBottomSheetProps {
 
 export function NudgeBottomSheet({
   open,
-  onClose,
   headline,
   body,
   ctaText,
