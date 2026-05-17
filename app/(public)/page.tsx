@@ -78,7 +78,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
       {/* Categories */}
       <section className="bg-white pt-5 pb-3">
-        <div className="mb-3 flex items-center justify-between px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto mb-3 flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <h2 className="text-sm font-bold text-gray-800">Kategori</h2>
         </div>
         <CategoryNav />
