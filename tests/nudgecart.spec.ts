@@ -66,6 +66,41 @@ test.describe("NudgeCart E2E — Public Pages", () => {
     await expect(productCards.first().or(emptyState)).toBeVisible({ timeout: 10000 });
   });
 
+  test("product images use real photos, not random placeholders", async ({ page }) => {
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+
+    const images = page.locator("img[alt]");
+    const count = await images.count();
+    expect(count).toBeGreaterThanOrEqual(1);
+
+    const invalidImages: string[] = [];
+    for (let i = 0; i < count; i++) {
+      const src = await images.nth(i).getAttribute("src");
+      const alt = await images.nth(i).getAttribute("alt");
+      if (src?.includes("picsum.photos")) {
+        invalidImages.push(`${alt}: ${src}`);
+      }
+    }
+
+    expect(
+      invalidImages,
+      `Found ${invalidImages.length} product(s) still using picsum placeholder: ${invalidImages.join(", ")}`
+    ).toHaveLength(0);
+  });
+
+  test("product grid screenshot — visual regression check", async ({ page }) => {
+    await page.goto("/");
+    await page.waitForLoadState("networkidle");
+
+    const productSection = page.locator("section").nth(1);
+    await expect(productSection).toBeVisible({ timeout: 10000 });
+
+    await productSection.screenshot({
+      path: "test-results/product-grid.png",
+    });
+  });
+
   test("footer contains app name", async ({ page }) => {
     await page.goto("/");
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
