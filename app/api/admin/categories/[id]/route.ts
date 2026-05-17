@@ -8,6 +8,7 @@ import { generateSlug } from "@/lib/utils";
 const updateCategorySchema = z.object({
   name: z.string().min(1, "Nama kategori wajib diisi"),
   slug: z.string().optional(),
+  iconUrl: z.string().optional(),
 });
 
 export async function PUT(
@@ -41,7 +42,7 @@ export async function PUT(
 
     const [updated] = await db
       .update(categories)
-      .set({ name: parsed.data.name, slug })
+      .set({ name: parsed.data.name, slug, iconUrl: parsed.data.iconUrl })
       .where(eq(categories.id, id))
       .returning();
 

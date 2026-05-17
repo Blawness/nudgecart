@@ -22,10 +22,13 @@ import {
   useForm,
 } from "@/components/ui/form"
 import { generateSlug } from "@/lib/utils"
+import { UploadDropzone } from "@/lib/uploadthing-client"
+import Image from "next/image"
 
 const categorySchema = z.object({
   name: z.string().min(1, "Nama kategori wajib diisi"),
   slug: z.string().min(1, "Slug wajib diisi"),
+  iconUrl: z.string().optional(),
 })
 
 type CategoryFormValues = z.infer<typeof categorySchema>
@@ -34,6 +37,7 @@ interface Category {
   id: string
   name: string
   slug: string
+  iconUrl?: string | null
 }
 
 interface CategoryFormProps {
@@ -54,6 +58,7 @@ export function CategoryForm({
   const defaultValues: CategoryFormValues = {
     name: category?.name ?? "",
     slug: category?.slug ?? "",
+    iconUrl: category?.iconUrl ?? "",
   }
 
   const form = useForm(categorySchema, defaultValues)
@@ -70,7 +75,11 @@ export function CategoryForm({
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          name: data.name,
+          slug: data.slug,
+          iconUrl: data.iconUrl,
+        }),
       })
 
       if (!res.ok) {
@@ -133,6 +142,39 @@ export function CategoryForm({
               <FormMessage />
             </FormItem>
           </FormField>
+
+          <div className="space-y-2">
+            <FormLabel>Icon Kategori</FormLabel>
+            {form.values.iconUrl ? (
+              <div className="relative aspect-square w-20 overflow-hidden rounded-lg border">
+                <Image
+                  src={form.values.iconUrl}
+                  alt="Icon preview"
+                  fill
+                  unoptimized
+                  className="object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => form.setValue("iconUrl", "" as never)}
+                  className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-red-500 text-white text-xs"
+                >
+                  ×
+                </button>
+              </div>
+            ) : (
+              <UploadDropzone
+                endpoint="productImage"
+                onClientUploadComplete={(res) => {
+                  const url = res[0]?.url;
+                  if (url) form.setValue("iconUrl", url as never);
+                }}
+                onUploadError={(error) => {
+                  toast.error(error.message);
+                }}
+              />
+            )}
+          </div>
 
           <DialogFooter>
             <Button

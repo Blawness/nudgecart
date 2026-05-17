@@ -4,6 +4,7 @@ import React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Tags } from "lucide-react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -28,6 +29,7 @@ interface Category {
   id: string;
   name: string;
   slug: string;
+  iconUrl?: string | null;
   productCount?: number;
 }
 
@@ -115,6 +117,7 @@ export default function AdminCategoriesPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Icon</TableHead>
                 <TableHead>Nama</TableHead>
                 <TableHead>Slug</TableHead>
                 <TableHead>Jumlah Produk</TableHead>
@@ -124,6 +127,23 @@ export default function AdminCategoriesPage() {
             <TableBody>
               {categories.map((category) => (
                 <TableRow key={category.id}>
+                  <TableCell>
+                    {category.iconUrl ? (
+                      <div className="relative size-10 overflow-hidden rounded-lg">
+                        <Image
+                          src={category.iconUrl}
+                          alt={category.name}
+                          fill
+                          unoptimized
+                          className="object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex size-10 items-center justify-center rounded-lg bg-muted">
+                        <Tags className="size-5 text-muted-foreground" />
+                      </div>
+                    )}
+                  </TableCell>
                   <TableCell className="font-medium">{category.name}</TableCell>
                   <TableCell className="text-muted-foreground">{category.slug}</TableCell>
                   <TableCell>{category.productCount ?? 0}</TableCell>
