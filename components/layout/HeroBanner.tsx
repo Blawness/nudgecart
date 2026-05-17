@@ -113,18 +113,14 @@ export function HeroBanner() {
                 className="relative w-full shrink-0"
                 style={{ minWidth: "100%" }}
               >
-                <Link href={banner.link}>
-                  <div className="relative aspect-[4.5/1] w-full overflow-hidden rounded-xl">
-                    <Image
-                      src={banner.imageUrl}
-                      alt={banner.title}
-                      width={1200}
-                      height={260}
-                      unoptimized
-                      className="h-full w-full object-cover"
-                      priority
-                    />
-                  </div>
+                <Link href={banner.link} className="block w-full">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={banner.imageUrl}
+                    alt={banner.title}
+                    className="w-full rounded-xl"
+                    loading={banner.id === banners[0]?.id ? "eager" : "lazy"}
+                  />
                 </Link>
               </div>
             ))}
