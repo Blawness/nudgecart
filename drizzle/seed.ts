@@ -9,6 +9,11 @@ import { db } from "@/lib/db";
 import * as schema from "@/drizzle/schema";
 import bcrypt from "bcryptjs";
 
+interface UploadedImage {
+  name: string;
+  url: string;
+}
+
 async function seed() {
   console.log("Seeding database...");
 
@@ -86,10 +91,31 @@ async function seed() {
     categories.map((c) => c.name).join(", ")
   );
 
+  // ------------------------------------------------------------------
+  // Load real images from grocery-img.json (source of truth)
+  // ------------------------------------------------------------------
+  const __dirname = dirname(fileURLToPath(import.meta.url));
+  const imagesJsonPath = resolve(__dirname, "..", "grocery-img.json");
+  const imagesData: UploadedImage[] = JSON.parse(
+    readFileSync(imagesJsonPath, "utf-8")
+  );
+
+  const imageMap = new Map<string, string>();
+  for (const img of imagesData) {
+    imageMap.set(img.name.replace(".webp", ""), img.url);
+  }
+
+  console.log(`Loaded ${imageMap.size} real product images`);
+
+  // ------------------------------------------------------------------
+  // Products that MUST have a matching image in grocery-img.json
+  // NO placeholders — skip if image not found.
+  // ------------------------------------------------------------------
   const products = [
     {
       name: "Bayam Segar",
       slug: "bayam-segar-toko-segar",
+      imageKey: "bayam-segar",
       description: "Bayam hijau segar dipetik pagi hari dari petani lokal.",
       price: 5000,
       stock: 50,
@@ -98,6 +124,7 @@ async function seed() {
     {
       name: "Wortel Impor",
       slug: "wortel-impor-toko-segar",
+      imageKey: "wortel-lokal",
       description: "Wortel segar ukuran besar, cocok untuk sup dan tumis.",
       price: 8000,
       stock: 40,
@@ -106,6 +133,7 @@ async function seed() {
     {
       name: "Brokoli",
       slug: "brokoli-toko-segar",
+      imageKey: "brokoli",
       description: "Brokoli hijau segar, kaya nutrisi.",
       price: 12000,
       stock: 30,
@@ -114,6 +142,7 @@ async function seed() {
     {
       name: "Apel Fuji",
       slug: "apel-fuji-toko-segar",
+      imageKey: "apel-fuji",
       description: "Apel Fuji manis dan renyah langsung dari kebun.",
       price: 15000,
       stock: 25,
@@ -122,6 +151,7 @@ async function seed() {
     {
       name: "Pisang Cavendish",
       slug: "pisang-cavendish-toko-segar",
+      imageKey: "pisang-cavendish",
       description: "Pisang cavendish manis, satu sisir isi 6-8 buah.",
       price: 10000,
       stock: 60,
@@ -130,6 +160,7 @@ async function seed() {
     {
       name: "Jeruk Mandarin",
       slug: "jeruk-mandarin-toko-segar",
+      imageKey: "jeruk-mandarin",
       description: "Jeruk mandarin manis segar, 500gr per pack.",
       price: 18000,
       stock: 20,
@@ -138,6 +169,7 @@ async function seed() {
     {
       name: "Daging Ayam Fillet",
       slug: "daging-ayam-fillet-toko-segar",
+      imageKey: "daging-ayam-fillet",
       description: "Daging ayam fillet tanpa tulang, 500gr.",
       price: 25000,
       stock: 35,
@@ -146,6 +178,7 @@ async function seed() {
     {
       name: "Daging Sapi Slice",
       slug: "daging-sapi-slice-toko-segar",
+      imageKey: "daging-sapi-slice",
       description: "Daging sapi slice tipis untuk shabu-shabu, 250gr.",
       price: 40000,
       stock: 15,
@@ -154,70 +187,16 @@ async function seed() {
     {
       name: "Ikan Salmon Fillet",
       slug: "ikan-salmon-fillet-toko-segar",
+      imageKey: "ikan-salmon-fillet",
       description: "Salmon fillet segar, 200gr.",
       price: 55000,
       stock: 10,
       categorySlug: "daging-ikan",
     },
     {
-      name: "Teh Botol Sosro",
-      slug: "teh-botol-sosro-toko-segar",
-      description: "Teh botol original, 1 karton isi 24.",
-      price: 75000,
-      stock: 20,
-      categorySlug: "minuman",
-    },
-    {
-      name: "Susu UHT Full Cream",
-      slug: "susu-uht-full-cream-toko-segar",
-      description: "Susu UHT full cream 1 liter.",
-      price: 18000,
-      stock: 45,
-      categorySlug: "minuman",
-    },
-    {
-      name: "Keripik Kentang",
-      slug: "keripik-kentang-toko-segar",
-      description: "Keripik kentang renyah rasa original, 150gr.",
-      price: 12000,
-      stock: 100,
-      categorySlug: "snack-makanan-ringan",
-    },
-    {
-      name: "Bawang Putih",
-      slug: "bawang-putih-toko-segar",
-      description: "Bawang putih segar, 250gr.",
-      price: 8000,
-      stock: 80,
-      categorySlug: "bumbu-dapur",
-    },
-    {
-      name: "Bawang Merah",
-      slug: "bawang-merah-toko-segar",
-      description: "Bawang merah segar, 250gr.",
-      price: 6000,
-      stock: 70,
-      categorySlug: "bumbu-dapur",
-    },
-    {
-      name: "Cabai Merah Keriting",
-      slug: "cabai-merah-keriting-toko-segar",
-      description: "Cabai merah keriting segar, 100gr.",
-      price: 5000,
-      stock: 55,
-      categorySlug: "bumbu-dapur",
-    },
-    {
-      name: "Minyak Goreng",
-      slug: "minyak-goreng-toko-segar",
-      description: "Minyak goreng sawit 1 liter, jernih dan berkualitas.",
-      price: 18000,
-      stock: 40,
-      categorySlug: "bumbu-dapur",
-    },
-    {
       name: "Udang Segar",
       slug: "udang-segar-toko-segar",
+      imageKey: "udang-segar",
       description: "Udang segar ukuran sedang, 500gr.",
       price: 45000,
       stock: 20,
@@ -226,28 +205,61 @@ async function seed() {
     {
       name: "Telur Ayam",
       slug: "telur-ayam-toko-segar",
+      imageKey: "telur-ayam",
       description: "Telur ayam negeri segar, 1kg isi 15-16 butir.",
       price: 25000,
       stock: 60,
       categorySlug: "daging-ikan",
     },
+    {
+      name: "Bawang Putih",
+      slug: "bawang-putih-toko-segar",
+      imageKey: "bawang-putih",
+      description: "Bawang putih segar, 250gr.",
+      price: 8000,
+      stock: 80,
+      categorySlug: "bumbu-dapur",
+    },
+    {
+      name: "Cabai Merah Keriting",
+      slug: "cabai-merah-keriting-toko-segar",
+      imageKey: "cabai-merah-keriting",
+      description: "Cabai merah keriting segar, 100gr.",
+      price: 5000,
+      stock: 55,
+      categorySlug: "bumbu-dapur",
+    },
+    {
+      name: "Minyak Goreng",
+      slug: "minyak-goreng-toko-segar",
+      imageKey: "minyak-goreng",
+      description: "Minyak goreng sawit 1 liter, jernih dan berkualitas.",
+      price: 18000,
+      stock: 40,
+      categorySlug: "bumbu-dapur",
+    },
+    {
+      name: "Beras Premium",
+      slug: "beras-premium-toko-segar",
+      imageKey: "beras-premium",
+      description: "Beras premium pulen, 1kg.",
+      price: 16000,
+      stock: 50,
+      categorySlug: "bumbu-dapur",
+    },
   ];
 
   const categoryMap = new Map(categories.map((c) => [c.slug, c.id]));
 
-  const __dirname = dirname(fileURLToPath(import.meta.url));
-  const imagesJsonPath = resolve(__dirname, "seed-images.json");
-  let productImagesMap: Record<string, string[]> = {};
-  try {
-    productImagesMap = JSON.parse(readFileSync(imagesJsonPath, "utf-8"));
-    console.log("Loaded product images from seed-images.json");
-  } catch {
-    console.log("No seed-images.json found, using placeholder images");
-  }
-
   for (const productData of products) {
     const categoryId = categoryMap.get(productData.categorySlug);
     if (!categoryId) continue;
+
+    const imageUrl = imageMap.get(productData.imageKey);
+    if (!imageUrl) {
+      console.warn(`  ⚠️  Skipped: ${productData.name} — no image in grocery-img.json`);
+      continue;
+    }
 
     const [product] = await db
       .insert(schema.products)
@@ -263,29 +275,11 @@ async function seed() {
       })
       .returning();
 
-    const customImages = productImagesMap[productData.slug];
-    if (customImages && customImages.length > 0) {
-      await db.insert(schema.productImages).values(
-        customImages.map((url, i) => ({
-          productId: product.id,
-          url,
-          order: i,
-        }))
-      );
-    } else {
-      await db.insert(schema.productImages).values([
-        {
-          productId: product.id,
-          url: `https://picsum.photos/seed/${product.slug}/400/400`,
-          order: 0,
-        },
-        {
-          productId: product.id,
-          url: `https://picsum.photos/seed/${product.slug}-2/400/400`,
-          order: 1,
-        },
-      ]);
-    }
+    await db.insert(schema.productImages).values({
+      productId: product.id,
+      url: imageUrl,
+      order: 0,
+    });
 
     console.log(`  Created product: ${product.name}`);
   }
