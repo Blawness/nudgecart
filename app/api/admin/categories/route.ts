@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     const session = await auth();
     const userRole = (session?.user as unknown as Record<string, unknown>)?.role as string | undefined;
     if (userRole !== "ADMIN") {
-      return NextResponse.json({ error: "Tidak memiliki akses" }, { status: 403 });
+      return NextResponse.json({ error: "Tidak memiliki akses" }, { status: 401 });
     }
 
     const body = await request.json();

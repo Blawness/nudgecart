@@ -35,7 +35,7 @@ export async function GET(request: Request) {
     if (role !== "MERCHANT" || !userId) {
       return NextResponse.json(
         { error: "Tidak memiliki akses" },
-        { status: 403 }
+        { status: 401 }
       );
     }
 
@@ -126,7 +126,7 @@ export async function POST(request: Request) {
     if (role !== "MERCHANT" || !userId) {
       return NextResponse.json(
         { error: "Tidak memiliki akses" },
-        { status: 403 }
+        { status: 401 }
       );
     }
 

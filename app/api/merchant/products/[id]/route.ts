@@ -37,7 +37,7 @@ export async function PUT(
     if (role !== "MERCHANT" || !userId) {
       return NextResponse.json(
         { error: "Tidak memiliki akses" },
-        { status: 403 }
+        { status: 401 }
       );
     }
 
@@ -159,7 +159,7 @@ export async function DELETE(
     if (role !== "MERCHANT" || !userId) {
       return NextResponse.json(
         { error: "Tidak memiliki akses" },
-        { status: 403 }
+        { status: 401 }
       );
     }
 

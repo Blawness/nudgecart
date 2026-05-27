@@ -20,7 +20,7 @@ export async function PUT(
     const session = await auth();
     const userRole = (session?.user as unknown as Record<string, unknown>)?.role as string | undefined;
     if (userRole !== "ADMIN") {
-      return NextResponse.json({ error: "Tidak memiliki akses" }, { status: 403 });
+      return NextResponse.json({ error: "Tidak memiliki akses" }, { status: 401 });
     }
 
     const { id } = await params;
@@ -70,7 +70,7 @@ export async function DELETE(
     const session = await auth();
     const userRole = (session?.user as unknown as Record<string, unknown>)?.role as string | undefined;
     if (userRole !== "ADMIN") {
-      return NextResponse.json({ error: "Tidak memiliki akses" }, { status: 403 });
+      return NextResponse.json({ error: "Tidak memiliki akses" }, { status: 401 });
     }
 
     const { id } = await params;

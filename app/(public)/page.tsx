@@ -106,7 +106,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       {/* Recommendation Sections */}
       <section className="bg-white px-4 pt-3 pb-6 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <RecommendationSection userName={userName} />
+          <RecommendationSection userName={userName} isAuthenticated={!!session} />
         </div>
       </section>
 

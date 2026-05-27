@@ -21,9 +21,10 @@ interface Product {
 
 interface RecommendationSectionProps {
   userName: string;
+  isAuthenticated?: boolean;
 }
 
-export function RecommendationSection({ userName }: RecommendationSectionProps) {
+export function RecommendationSection({ userName, isAuthenticated = false }: RecommendationSectionProps) {
   const { data, isLoading } = useQuery<ApiSuccess<Product[]>>({
     queryKey: ["nudge-recommendations"],
     queryFn: async () => {
@@ -31,6 +32,7 @@ export function RecommendationSection({ userName }: RecommendationSectionProps) 
       if (!res.ok) throw new Error("Gagal memuat rekomendasi");
       return res.json();
     },
+    enabled: isAuthenticated,
   });
 
   const { data: ecoData, isLoading: ecoLoading } = useQuery<ApiSuccess<Product[]>>({
@@ -40,7 +42,10 @@ export function RecommendationSection({ userName }: RecommendationSectionProps) 
       if (!res.ok) throw new Error("Gagal memuat rekomendasi eco");
       return res.json();
     },
+    enabled: isAuthenticated,
   });
+
+  if (!isAuthenticated) return null;
 
   const products = data?.data ?? [];
   const ecoProducts = ecoData?.data ?? [];

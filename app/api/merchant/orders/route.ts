@@ -20,7 +20,7 @@ export async function GET() {
     if (role !== "MERCHANT" || !userId) {
       return NextResponse.json(
         { error: "Tidak memiliki akses" },
-        { status: 403 }
+        { status: 401 }
       );
     }
 
