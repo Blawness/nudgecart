@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, ShoppingBag, Receipt, Package } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +18,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatRupiah } from "@/lib/utils";
 
 interface Address {
   id: string;
@@ -49,6 +50,16 @@ export default function ProfilePage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editAddressId, setEditAddressId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
+
+  const { data: stats, isLoading: statsLoading } = useQuery({
+    queryKey: ["user-stats"],
+    queryFn: async () => {
+      const res = await fetch("/api/user/stats");
+      if (!res.ok) throw new Error("Gagal memuat statistik");
+      const json = await res.json();
+      return json.data as { totalOrders: number; totalSpent: number; totalItems: number };
+    },
+  });
 
   const { data: addresses, isLoading: addressesLoading } = useQuery({
     queryKey: ["addresses"],
@@ -163,6 +174,72 @@ export default function ProfilePage() {
       <h1 className="font-heading mb-6 text-2xl font-semibold">Profil Saya</h1>
 
       <div className="flex flex-col gap-6">
+        {/* User Summary Card */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-4">
+              <div className="flex size-16 shrink-0 items-center justify-center rounded-full bg-primary text-2xl font-bold text-primary-foreground">
+                {session?.user?.name?.charAt(0).toUpperCase() ?? "?"}
+              </div>
+              <div className="min-w-0">
+                <p className="truncate text-lg font-semibold">
+                  {session?.user?.name ?? "—"}
+                </p>
+                <p className="truncate text-sm text-muted-foreground">
+                  {session?.user?.email ?? "—"}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Shopping Stats Section */}
+        <div className="grid grid-cols-3 gap-3">
+          {statsLoading ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <Card key={i}>
+                <CardContent className="flex flex-col items-center gap-2 pt-5 pb-4">
+                  <Skeleton className="size-8 rounded-full" />
+                  <Skeleton className="h-5 w-12" />
+                  <Skeleton className="h-3 w-16" />
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <>
+              <Card>
+                <CardContent className="flex flex-col items-center gap-1 pt-5 pb-4">
+                  <div className="flex size-9 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <Receipt className="size-4" />
+                  </div>
+                  <p className="text-xl font-bold">{stats?.totalOrders ?? 0}</p>
+                  <p className="text-center text-xs text-muted-foreground">Total Pesanan</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="flex flex-col items-center gap-1 pt-5 pb-4">
+                  <div className="flex size-9 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <ShoppingBag className="size-4" />
+                  </div>
+                  <p className="text-xl font-bold leading-tight">
+                    {formatRupiah(stats?.totalSpent ?? 0)}
+                  </p>
+                  <p className="text-center text-xs text-muted-foreground">Total Belanja</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="flex flex-col items-center gap-1 pt-5 pb-4">
+                  <div className="flex size-9 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <Package className="size-4" />
+                  </div>
+                  <p className="text-xl font-bold">{stats?.totalItems ?? 0}</p>
+                  <p className="text-center text-xs text-muted-foreground">Total Item</p>
+                </CardContent>
+              </Card>
+            </>
+          )}
+        </div>
+
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Informasi Akun</CardTitle>

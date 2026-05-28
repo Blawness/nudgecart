@@ -63,16 +63,36 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.id = token.id as string;
         (session.user as unknown as Record<string, unknown>).role =
           token.role;
+        (session.user as unknown as Record<string, unknown>).onboardingCompleted =
+          (token as unknown as Record<string, unknown>).onboardingCompleted;
+        (session.user as unknown as Record<string, unknown>).onboardingSkipped =
+          (token as unknown as Record<string, unknown>).onboardingSkipped;
       }
 
       return session;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id;
         (token as unknown as Record<string, unknown>).role = (
           user as unknown as Record<string, unknown>
         ).role;
+      }
+      // Re-query onboarding status on sign-in OR when session.update() is called
+      if (user || trigger === "update") {
+        const userId = (token.id ?? user?.id) as string;
+        const [prefs] = await db
+          .select({
+            onboardingCompleted: schema.userPreferences.onboardingCompleted,
+            onboardingSkipped: schema.userPreferences.onboardingSkipped,
+          })
+          .from(schema.userPreferences)
+          .where(eq(schema.userPreferences.userId, userId))
+          .limit(1);
+        (token as unknown as Record<string, unknown>).onboardingCompleted =
+          prefs?.onboardingCompleted ?? false;
+        (token as unknown as Record<string, unknown>).onboardingSkipped =
+          prefs?.onboardingSkipped ?? false;
       }
       return token;
     },

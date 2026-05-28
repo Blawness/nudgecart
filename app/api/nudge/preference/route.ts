@@ -28,7 +28,7 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json();
-  const { favoriteCategories, lifestyleType, shoppingFrequency, onboardingCompleted } = body;
+  const { favoriteCategories, lifestyleType, shoppingFrequency, onboardingCompleted, onboardingSkipped } = body;
 
   const [existing] = await db
     .select()
@@ -44,6 +44,7 @@ export async function POST(req: Request) {
         lifestyleType: lifestyleType ?? existing.lifestyleType,
         shoppingFrequency: shoppingFrequency ?? existing.shoppingFrequency,
         onboardingCompleted: onboardingCompleted ?? existing.onboardingCompleted,
+        onboardingSkipped: onboardingSkipped ?? existing.onboardingSkipped,
         updatedAt: new Date(),
       })
       .where(eq(schema.userPreferences.userId, session.user.id))
@@ -60,7 +61,7 @@ export async function POST(req: Request) {
       lifestyleType: lifestyleType ?? null,
       shoppingFrequency: shoppingFrequency ?? null,
       onboardingCompleted: onboardingCompleted ?? false,
-      onboardingSkipped: false,
+      onboardingSkipped: onboardingSkipped ?? false,
     })
     .returning();
 

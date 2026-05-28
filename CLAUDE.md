@@ -74,3 +74,21 @@ Route protection is handled via NextAuth middleware in `proxy.ts`. Role-based gu
 - Route Handlers return `{ error: string }` on failure (`ApiError`)
 - Paginated endpoints return `PaginatedResponse<T>` with `{ data, total, page, limit }`
 - Auth check pattern: `const session = await auth(); if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })`
+
+### Nudge system
+The core differentiating feature. `lib/nudge-engine.ts` is the decisioning engine — call `decideNudge(userId, context, sessionId, ...)` to get a `NudgeDecision | null`.
+
+Key rules baked into the engine:
+- **24-hour cooldown** after any `NUDGE_DISMISSED` event — no nudges shown
+- **Per-type cap**: each `NudgeType` is limited to N displays per 7-day window
+- **Framing is context-driven**: HOME/PRODUCT_DETAIL → `GAIN`; CART/CHECKOUT → `LOSS`; POST_PURCHASE → `GAIN`
+
+Domain types (all in `types/index.ts`):
+- `NudgeType`: `JUST_IN_TIME` | `PRE_CHECKOUT` | `LAST_CHANCE` | `POST_PURCHASE` | `PROMO_PERSONAL` | `RECOMMENDATION`
+- `NudgeContext`: `HOME` | `PRODUCT_DETAIL` | `CART` | `CHECKOUT` | `POST_PURCHASE`
+- `NudgeEvent`: `NUDGE_DISPLAYED` | `NUDGE_ACCEPTED` | `NUDGE_DISMISSED` | `ECO_PURCHASE` | `PROMO_PERSONAL_CLICK`
+- `EcoLabel`: `FRESH` | `ECONOMICAL` | `POPULAR` — set on products, used in eco-nudge suggestions
+
+Nudge interactions are logged to `nudge_logs` (with `sessionId`). Buyer feedback goes to `nudge_feedback`. Analytics are exposed at `app/api/nudge/` and surfaced in the admin dashboard.
+
+**User personalization** feeds nudge decisions: `userPreferences` stores `lifestyleType` (`HEMAT`/`SEHAT`/`ECO`), `favoriteCategories`, `shoppingFrequency`, and `onboardingCompleted`. Onboarding sets these on first buyer login.

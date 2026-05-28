@@ -47,7 +47,7 @@ export default auth(async (req) => {
     return NextResponse.redirect(new URL("/", baseUrl));
   }
 
-  if (isAdminRoute) {
+if (isAdminRoute) {
     if (!isLoggedIn || userRole !== "ADMIN") {
       return NextResponse.redirect(new URL("/login", baseUrl));
     }

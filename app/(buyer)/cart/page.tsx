@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Tag, CheckCircle } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { CartItem } from "@/components/cart/CartItem";
 import { CartSummary } from "@/components/cart/CartSummary";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { NudgeInlineBanner } from "@/components/nudge/NudgeInlineBanner";
+import { formatRupiah } from "@/lib/utils";
 import { useCart } from "@/hooks/useCart";
 import { useNudge } from "@/hooks/useNudge";
 
@@ -99,6 +100,45 @@ export default function CartPage() {
         />
       ) : (
         <div className="flex flex-col gap-6">
+          {(() => {
+            const subtotal = items.reduce(
+              (sum, item) => sum + item.price * item.quantity,
+              0
+            );
+            return (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 flex items-start gap-3">
+                <div className="shrink-0 mt-0.5">
+                  <Tag className="size-5 text-amber-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-semibold text-amber-900">
+                      Promo Default Aktif 🎉
+                    </p>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                      <CheckCircle className="size-3" />
+                      Diterapkan
+                    </span>
+                  </div>
+                  <p className="text-xs text-amber-700 mt-0.5">
+                    Gratis ongkir untuk pembelian min. Rp 50.000
+                  </p>
+                  <p
+                    className={`text-xs font-medium mt-1 ${
+                      subtotal >= 50000
+                        ? "text-green-700"
+                        : "text-amber-800"
+                    }`}
+                  >
+                    {subtotal >= 50000
+                      ? "✓ Gratis ongkir diterapkan!"
+                      : `Tambah ${formatRupiah(50000 - subtotal)} lagi untuk gratis ongkir`}
+                  </p>
+                </div>
+              </div>
+            );
+          })()}
+
           <div className="divide-y divide-border rounded-xl border bg-card">
             {items.map((item) => (
               <div key={item.id} className="px-4">

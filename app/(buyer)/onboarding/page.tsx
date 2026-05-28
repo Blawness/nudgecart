@@ -47,7 +47,7 @@ const steps = [
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session, update: updateSession } = useSession();
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
 
@@ -68,8 +68,9 @@ export default function OnboardingPage() {
       if (!res.ok) throw new Error("Gagal menyimpan preferensi");
       return res.json();
     },
-    onSuccess: () => {
-      router.push("/");
+    onSuccess: async () => {
+      await updateSession({ onboardingCompleted: true, onboardingSkipped: false });
+      window.location.href = "/";
     },
   });
 
@@ -116,7 +117,8 @@ export default function OnboardingPage() {
         onboardingCompleted: false,
       }),
     });
-    router.push("/");
+    await updateSession({ onboardingCompleted: false, onboardingSkipped: true });
+    window.location.href = "/";
   };
 
   return (

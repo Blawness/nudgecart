@@ -195,6 +195,14 @@ export default function CheckoutPage() {
                       <span>{formatRupiah(total)}</span>
                     </div>
                   </div>
+                  {subtotal >= 50000 && (
+                    <div className="flex items-center gap-2 rounded-lg bg-green-50 border border-green-200 px-3 py-2 text-sm">
+                      <span>🎉</span>
+                      <span className="text-green-700 font-medium">
+                        Kamu hemat Rp 10.000 ongkir dengan pembelian ini!
+                      </span>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             );
@@ -235,8 +243,8 @@ export default function CheckoutPage() {
       {!isLoading && items.length > 0 && (
         <div className="mt-6">
           <NudgeStaticBlock
-            headline="Kontribusi kamu"
-            body="Dengan berbelanja hari ini, kamu mendukung produk lokal dan berkontribusi mengurangi emisi karbon. Setiap pilihan kecil berdampak besar bagi lingkungan."
+            headline="Kontribusi kamu terhadap food loss"
+            body="Dengan membeli produk segar hari ini, kamu membantu mengurangi food loss dan mendukung petani lokal. Setiap pembelian produk segar berkontribusi pada rantai pasokan yang lebih berkelanjutan."
           />
         </div>
       )}

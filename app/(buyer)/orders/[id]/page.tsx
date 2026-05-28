@@ -287,12 +287,12 @@ function OrderDetailContent() {
 
         {data && data.status !== "CANCELLED" && (
           <NudgePostPurchase
-            headline="Terima kasih!"
-            body="Dengan memilih produk ini, kamu telah berkontribusi untuk lingkungan yang lebih baik."
-            ctaText="Lihat Rekomendasi"
+            headline="Terima kasih telah berkontribusi! 🌿"
+            body="Dengan membeli produk segar, kamu telah berkontribusi pada pengurangan food loss. Produk segar yang kamu beli membantu petani lokal dan mengurangi pemborosan pangan."
+            ctaText="Belanja Produk Segar Lagi"
             ecoCount={0}
             recommendations={[]}
-            showConfetti={data.status === "DELIVERED"}
+            showConfetti={data.status === "PENDING_PAYMENT" || data.status === "CONFIRMED"}
           />
         )}
       </div>

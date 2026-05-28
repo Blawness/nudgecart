@@ -65,13 +65,19 @@ export function Navbar() {
 
           {/* Right side */}
           <div className="flex items-center gap-3">
-            {/* Brand / Promo links — desktop */}
+            {/* Nav links — desktop */}
             <div className="hidden items-center gap-5 md:flex">
               <Link
-                href="/brands"
+                href="/"
                 className="text-sm font-medium text-gray-600 hover:text-primary"
               >
-                Brand
+                Home
+              </Link>
+              <Link
+                href="/categories"
+                className="text-sm font-medium text-gray-600 hover:text-primary"
+              >
+                Kategori
               </Link>
               <Link
                 href="/promo"
