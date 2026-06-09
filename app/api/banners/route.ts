@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { eq, desc } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { banners } from "@/drizzle/schema";
-import { auth } from "@/lib/auth";
+import { requireRole } from "@/lib/auth-utils";
 
 export async function GET() {
   try {
@@ -23,11 +23,8 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
-    const userRole = (session?.user as unknown as Record<string, unknown>)?.role as string | undefined;
-    if (userRole !== "ADMIN") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { error } = await requireRole("ADMIN");
+    if (error) return error;
 
     const body = await request.json();
     const { title, subtitle, imageUrl, link, bgColor, textColor, order } = body;

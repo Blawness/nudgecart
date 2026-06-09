@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { eq, sql } from "drizzle-orm";
-import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { categories, products } from "@/drizzle/schema";
 import { generateSlug } from "@/lib/utils";
+import { requireRole } from "@/lib/auth-utils";
 
 const updateCategorySchema = z.object({
   name: z.string().min(1, "Nama kategori wajib diisi"),
@@ -17,11 +17,8 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    const userRole = (session?.user as unknown as Record<string, unknown>)?.role as string | undefined;
-    if (userRole !== "ADMIN") {
-      return NextResponse.json({ error: "Tidak memiliki akses" }, { status: 401 });
-    }
+    const { error } = await requireRole("ADMIN");
+    if (error) return error;
 
     const { id } = await params;
     const body = await request.json();
@@ -67,11 +64,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    const userRole = (session?.user as unknown as Record<string, unknown>)?.role as string | undefined;
-    if (userRole !== "ADMIN") {
-      return NextResponse.json({ error: "Tidak memiliki akses" }, { status: 401 });
-    }
+    const { error } = await requireRole("ADMIN");
+    if (error) return error;
 
     const { id } = await params;
 

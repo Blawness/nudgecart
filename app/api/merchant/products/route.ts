@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { eq, and, inArray } from "drizzle-orm";
-import { auth } from "@/lib/auth";
+import { requireRole } from "@/lib/auth-utils";
 import { db } from "@/lib/db";
 import {
   merchants,
@@ -26,18 +26,9 @@ const createProductSchema = z.object({
 
 export async function GET(request: Request) {
   try {
-    const session = await auth();
-    const role = (session?.user as unknown as Record<string, unknown>)?.role as
-      | string
-      | undefined;
-    const userId = session?.user?.id;
-
-    if (role !== "MERCHANT" || !userId) {
-      return NextResponse.json(
-        { error: "Tidak memiliki akses" },
-        { status: 401 }
-      );
-    }
+    const { user: authUser, error } = await requireRole("MERCHANT");
+    if (error) return error;
+    const userId = authUser.id;
 
     const [merchant] = await db
       .select()
@@ -117,18 +108,9 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const session = await auth();
-    const role = (session?.user as unknown as Record<string, unknown>)?.role as
-      | string
-      | undefined;
-    const userId = session?.user?.id;
-
-    if (role !== "MERCHANT" || !userId) {
-      return NextResponse.json(
-        { error: "Tidak memiliki akses" },
-        { status: 401 }
-      );
-    }
+    const { user: authUser, error } = await requireRole("MERCHANT");
+    if (error) return error;
+    const userId = authUser.id;
 
     const [merchant] = await db
       .select()

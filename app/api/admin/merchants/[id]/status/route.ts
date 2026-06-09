@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
-import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { merchants } from "@/drizzle/schema";
+import { requireRole } from "@/lib/auth-utils";
 
 const updateStatusSchema = z.object({
   status: z.enum(["ACTIVE", "SUSPENDED"]),
@@ -14,11 +14,8 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    const userRole = (session?.user as unknown as Record<string, unknown>)?.role as string | undefined;
-    if (userRole !== "ADMIN") {
-      return NextResponse.json({ error: "Tidak memiliki akses" }, { status: 401 });
-    }
+    const { error } = await requireRole("ADMIN");
+    if (error) return error;
 
     const { id } = await params;
     const body = await request.json();
