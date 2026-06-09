@@ -38,6 +38,41 @@ async function countNudgeTypeLast7Days(
   return result[0]?.count ?? 0;
 }
 
+async function getNudgeStatus(
+  userId: string,
+  nudgeType: NudgeType
+): Promise<{ inCooldown: boolean; weeklyCount: number }> {
+  const [cooldownResult, countResult] = await Promise.all([
+    db
+      .select()
+      .from(schema.nudgeLogs)
+      .where(
+        and(
+          eq(schema.nudgeLogs.userId, userId),
+          eq(schema.nudgeLogs.event, "NUDGE_DISMISSED"),
+          gte(schema.nudgeLogs.createdAt, sql`NOW() - INTERVAL '24 hours'`)
+        )
+      )
+      .orderBy(desc(schema.nudgeLogs.createdAt))
+      .limit(1),
+    db
+      .select({ count: sql<number>`count(*)` })
+      .from(schema.nudgeLogs)
+      .where(
+        and(
+          eq(schema.nudgeLogs.userId, userId),
+          eq(schema.nudgeLogs.nudgeType, nudgeType),
+          gte(schema.nudgeLogs.createdAt, sql`NOW() - INTERVAL '7 days'`)
+        )
+      ),
+  ]);
+
+  return {
+    inCooldown: cooldownResult.length > 0,
+    weeklyCount: countResult[0]?.count ?? 0,
+  };
+}
+
 export async function isRateLimited(userId: string, nudgeType: NudgeType, maxPerWeek = 2): Promise<boolean> {
   const count = await countNudgeTypeLast7Days(userId, nudgeType);
   return count >= maxPerWeek;
@@ -208,11 +243,6 @@ export async function evaluateNudge(params: {
 }): Promise<NudgeDecision> {
   const { userId, context, productId, popupAlreadyShown } = params;
 
-  const cooldown = await isInCooldown(userId);
-  if (cooldown) {
-    return { shouldShow: false, nudgeType: null, framingType: null, content: null };
-  }
-
   const framing = determineFraming(context);
 
   if (context === "PRODUCT_DETAIL" && productId) {
@@ -220,8 +250,8 @@ export async function evaluateNudge(params: {
       return { shouldShow: false, nudgeType: null, framingType: null, content: null };
     }
 
-    const count = await countNudgeTypeLast7Days(userId, "JUST_IN_TIME");
-    if (count >= 2) {
+    const status = await getNudgeStatus(userId, "JUST_IN_TIME");
+    if (status.inCooldown || status.weeklyCount >= 2) {
       return { shouldShow: false, nudgeType: null, framingType: null, content: null };
     }
 
@@ -270,8 +300,8 @@ export async function evaluateNudge(params: {
   }
 
   if (context === "CART") {
-    const limited = await isRateLimited(userId, "PRE_CHECKOUT");
-    if (limited) {
+    const status = await getNudgeStatus(userId, "PRE_CHECKOUT");
+    if (status.inCooldown || status.weeklyCount >= 2) {
       return { shouldShow: false, nudgeType: null, framingType: null, content: null };
     }
     const template = nudgeTemplates.PRE_CHECKOUT_ECO;
@@ -288,8 +318,8 @@ export async function evaluateNudge(params: {
   }
 
   if (context === "CHECKOUT") {
-    const limited = await isRateLimited(userId, "LAST_CHANCE");
-    if (limited) {
+    const status = await getNudgeStatus(userId, "LAST_CHANCE");
+    if (status.inCooldown || status.weeklyCount >= 2) {
       return { shouldShow: false, nudgeType: null, framingType: null, content: null };
     }
     const template = nudgeTemplates.LAST_CHANCE_CARBON;
@@ -306,8 +336,8 @@ export async function evaluateNudge(params: {
   }
 
   if (context === "POST_PURCHASE") {
-    const limited = await isRateLimited(userId, "POST_PURCHASE");
-    if (limited) {
+    const status = await getNudgeStatus(userId, "POST_PURCHASE");
+    if (status.inCooldown || status.weeklyCount >= 2) {
       return { shouldShow: false, nudgeType: null, framingType: null, content: null };
     }
     const template = nudgeTemplates.POST_PURCHASE_THANKS;
