@@ -33,6 +33,7 @@ export default auth(async (req) => {
     nextUrl.pathname.startsWith("/checkout") ||
     nextUrl.pathname.startsWith("/orders") ||
     nextUrl.pathname.startsWith("/profile") ||
+    nextUrl.pathname.startsWith("/account") ||
     nextUrl.pathname.startsWith("/onboarding");
 
   const isAuthRoute =
@@ -47,7 +48,7 @@ export default auth(async (req) => {
     return NextResponse.redirect(new URL("/", baseUrl));
   }
 
-if (isAdminRoute) {
+  if (isAdminRoute) {
     if (!isLoggedIn || userRole !== "ADMIN") {
       return NextResponse.redirect(new URL("/login", baseUrl));
     }

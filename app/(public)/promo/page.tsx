@@ -1,189 +1,119 @@
-import Link from "next/link";
 import type { Metadata } from "next";
-import Image from "next/image";
-import { eq, and, isNotNull } from "drizzle-orm";
-import { db } from "@/lib/db";
-import { banners, products, productImages } from "@/drizzle/schema";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ChevronRight } from "lucide-react";
+import { BundlePackageCard } from "@/components/promo/BundlePackageCard";
+import {
+  promoBundles,
+  promoFilterChips,
+  promoTabs,
+  type PromoBundleType,
+} from "@/lib/promo-bundles";
 import { formatRupiah } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Promo - NudgeCart",
-  description: "Promo dan penawaran spesial dari NudgeCart",
+  description: "Promo package dan tebus murah dari NudgeCart",
 };
 
-const ECO_LABEL_BADGE: Record<
-  "FRESH" | "ECONOMICAL" | "POPULAR",
-  { label: string; className: string }
-> = {
-  FRESH: {
-    label: "Produk Segar",
-    className: "bg-green-100 text-green-700 hover:bg-green-100",
-  },
-  ECONOMICAL: {
-    label: "Harga Hemat",
-    className: "bg-yellow-100 text-yellow-700 hover:bg-yellow-100",
-  },
-  POPULAR: {
-    label: "Best Deal",
-    className: "bg-orange-100 text-orange-700 hover:bg-orange-100",
-  },
-};
+function bundlesByType(type: PromoBundleType) {
+  return promoBundles.filter((bundle) => bundle.type === type);
+}
 
-export default async function PromoPage() {
-  const activeBanners = await db
-    .select({
-      id: banners.id,
-      title: banners.title,
-      subtitle: banners.subtitle,
-      imageUrl: banners.imageUrl,
-      link: banners.link,
-      bgColor: banners.bgColor,
-      textColor: banners.textColor,
-    })
-    .from(banners)
-    .where(eq(banners.isActive, true))
-    .orderBy(banners.order);
+function groupByMinSpend(bundles: ReturnType<typeof bundlesByType>) {
+  return [...new Set(bundles.map((bundle) => bundle.minSpend))]
+    .sort((a, b) => a - b)
+    .map((minSpend) => ({
+      minSpend,
+      bundles: bundles.filter((bundle) => bundle.minSpend === minSpend),
+    }));
+}
 
-  const featuredProducts = await db
-    .select({
-      id: products.id,
-      name: products.name,
-      slug: products.slug,
-      price: products.price,
-      stock: products.stock,
-      ecoLabel: products.ecoLabel,
-      imageUrl: productImages.url,
-    })
-    .from(products)
-    .leftJoin(
-      productImages,
-      and(
-        eq(products.id, productImages.productId),
-        eq(productImages.order, 0),
-      ),
-    )
-    .where(and(eq(products.isActive, true), isNotNull(products.ecoLabel)))
-    .limit(12);
-
+export default function PromoPage() {
   return (
-    <div className="px-4 py-6">
-      <h1 className="mb-5 text-lg font-bold text-gray-900">Promo</h1>
-
-      {activeBanners.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <p className="text-sm text-muted-foreground">
-            Belum ada promo saat ini
+    <div className="bg-gray-50">
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-semibold uppercase text-primary">
+              Promo Hemat
+            </p>
+            <h1 className="text-2xl font-extrabold text-gray-900">Promo</h1>
+          </div>
+          <p className="max-w-xl text-sm text-muted-foreground">
+            Pilih package dan tebus murah dengan hitungan hemat otomatis untuk
+            belanja harian.
           </p>
-          <Link
-            href="/"
-            className="mt-3 text-sm font-medium text-primary hover:underline"
-          >
-            Kembali ke Beranda
-          </Link>
         </div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {activeBanners.map((banner) => (
-            <Link key={banner.id} href={banner.link ?? "/"} className="group">
-              <Card className="overflow-hidden transition-shadow hover:shadow-lg">
-                <div className="relative aspect-[16/9] w-full">
-                  <Image
-                    src={banner.imageUrl}
-                    alt={banner.title}
-                    fill
-                    unoptimized
-                    className="object-cover transition-transform group-hover:scale-105"
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  />
-                </div>
-                <CardContent
-                  className="flex items-center justify-between gap-2 p-4"
-                  style={{
-                    backgroundColor: banner.bgColor ?? undefined,
-                    color: banner.textColor ?? undefined,
-                  }}
-                >
-                  <div className="min-w-0">
-                    <h3 className="truncate text-sm font-bold">
-                      {banner.title}
-                    </h3>
-                    {banner.subtitle && (
-                      <p className="truncate text-xs opacity-80">
-                        {banner.subtitle}
-                      </p>
-                    )}
-                  </div>
-                  <ChevronRight className="size-4 shrink-0 opacity-70" />
-                </CardContent>
-              </Card>
-            </Link>
+
+        <div
+          role="tablist"
+          aria-label="Kategori promo"
+          className="mb-4 flex gap-2 overflow-x-auto"
+        >
+          {promoTabs.map((tab, index) => (
+            <a
+              key={tab}
+              role="tab"
+              aria-selected={index === 0}
+              href={`#${tab.toLowerCase().replace(/\s+/g, "-")}`}
+              className="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 shadow-sm transition-colors hover:border-primary hover:text-primary aria-selected:border-primary aria-selected:bg-primary aria-selected:text-white"
+            >
+              {tab}
+            </a>
           ))}
         </div>
-      )}
 
-      {featuredProducts.length > 0 && (
-        <section className="mt-10">
-          <h2 className="mb-4 text-lg font-bold text-gray-900">
-            Produk Promo
-          </h2>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-            {featuredProducts.map((product) => {
-              const badge =
-                product.ecoLabel &&
-                ECO_LABEL_BADGE[
-                  product.ecoLabel as keyof typeof ECO_LABEL_BADGE
-                ];
-              return (
-                <Card
-                  key={product.id}
-                  className="overflow-hidden transition-shadow hover:shadow-md"
-                >
-                  <div className="relative aspect-square w-full bg-gray-100">
-                    {product.imageUrl ? (
-                      <Image
-                        src={product.imageUrl}
-                        alt={product.name}
-                        fill
-                        unoptimized
-                        className="object-cover"
-                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
-                        No image
+        <div className="mb-6 flex gap-2 overflow-x-auto pb-1">
+          {promoFilterChips.map((filter) => (
+            <span
+              key={filter}
+              className="shrink-0 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-sm"
+            >
+              {filter}
+            </span>
+          ))}
+        </div>
+
+        <div className="space-y-10">
+          {promoTabs.map((tab) => {
+            const groups = groupByMinSpend(bundlesByType(tab));
+
+            return (
+              <section key={tab} id={tab.toLowerCase().replace(/\s+/g, "-")}>
+                <div className="mb-4 flex items-center justify-between">
+                  <h2 className="text-lg font-extrabold text-gray-900">
+                    {tab}
+                  </h2>
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {bundlesByType(tab).length} promo aktif
+                  </span>
+                </div>
+
+                <div className="space-y-6">
+                  {groups.map((group) => (
+                    <div key={`${tab}-${group.minSpend}`}>
+                      <div className="mb-3 flex items-center gap-2">
+                        <div className="h-px flex-1 bg-gray-200" />
+                        <h3 className="rounded-full bg-white px-3 py-1 text-xs font-bold text-gray-800 shadow-sm">
+                          Shopping Min. {formatRupiah(group.minSpend)}
+                        </h3>
+                        <div className="h-px flex-1 bg-gray-200" />
                       </div>
-                    )}
-                    {badge && (
-                      <Badge
-                        className={`absolute left-2 top-2 text-[10px] font-semibold ${badge.className}`}
-                      >
-                        {badge.label}
-                      </Badge>
-                    )}
-                  </div>
-                  <CardContent className="p-3">
-                    <p className="mb-1 line-clamp-2 text-xs font-medium leading-snug text-gray-800">
-                      {product.name}
-                    </p>
-                    <p className="mb-3 text-sm font-bold text-primary">
-                      {formatRupiah(product.price)}
-                    </p>
-                    <Link
-                      href={`/products/${product.slug}`}
-                      className="block rounded-md border border-primary px-3 py-1.5 text-center text-xs font-semibold text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
-                    >
-                      + Keranjang
-                    </Link>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        </section>
-      )}
+
+                      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {group.bundles.map((bundle) => (
+                          <BundlePackageCard
+                            key={bundle.id}
+                            bundle={bundle}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }

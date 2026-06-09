@@ -2,9 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ShoppingCart, Tag, CheckCircle } from "lucide-react";
-import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CartItem } from "@/components/cart/CartItem";
 import { CartSummary } from "@/components/cart/CartSummary";
@@ -16,6 +14,7 @@ import { useNudge } from "@/hooks/useNudge";
 
 export default function CartPage() {
   const { items, isLoading } = useCart();
+  const [promoActive, setPromoActive] = useState(true);
 
   const { evaluateNudge, logEvent, userId, incrementInteraction } = useNudge();
   const [nudgeContent, setNudgeContent] = useState<{
@@ -46,7 +45,7 @@ export default function CartPage() {
         }
       );
     }
-  }, [userId, items.length]);
+  }, [evaluateNudge, incrementInteraction, items.length, nudgeContent, userId]);
 
   const handleNudgeAccept = () => {
     if (nudgeContent) {
@@ -101,41 +100,53 @@ export default function CartPage() {
       ) : (
         <div className="flex flex-col gap-6">
           {(() => {
-            const subtotal = items.reduce(
-              (sum, item) => sum + item.price * item.quantity,
-              0
-            );
+            const merchantSubtotals = new Map<string, number>();
+            for (const item of items) {
+              merchantSubtotals.set(
+                item.merchantId,
+                (merchantSubtotals.get(item.merchantId) ?? 0) +
+                  item.price * item.quantity,
+              );
+            }
+            const eligibleMerchantCount = Array.from(
+              merchantSubtotals.values(),
+            ).filter((subtotal) => subtotal >= 50000).length;
             return (
-              <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 flex items-start gap-3">
+              <label className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3">
+                <input
+                  type="checkbox"
+                  aria-label="Gratis Ongkir"
+                  checked={promoActive}
+                  onChange={(event) => setPromoActive(event.target.checked)}
+                  className="mt-1 size-4 rounded border-amber-300 accent-primary"
+                />
                 <div className="shrink-0 mt-0.5">
                   <Tag className="size-5 text-amber-600" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-semibold text-amber-900">
-                      Promo Default Aktif 🎉
+                      Gratis Ongkir
                     </p>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
-                      <CheckCircle className="size-3" />
-                      Diterapkan
-                    </span>
+                    {promoActive && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                        <CheckCircle className="size-3" />
+                        Diterapkan
+                      </span>
+                    )}
                   </div>
                   <p className="text-xs text-amber-700 mt-0.5">
-                    Gratis ongkir untuk pembelian min. Rp 50.000
+                    Gratis ongkir untuk tiap toko dengan belanja min. Rp 50.000
                   </p>
-                  <p
-                    className={`text-xs font-medium mt-1 ${
-                      subtotal >= 50000
-                        ? "text-green-700"
-                        : "text-amber-800"
-                    }`}
-                  >
-                    {subtotal >= 50000
-                      ? "✓ Gratis ongkir diterapkan!"
-                      : `Tambah ${formatRupiah(50000 - subtotal)} lagi untuk gratis ongkir`}
+                  <p className="mt-1 text-xs font-medium text-amber-800">
+                    {!promoActive
+                      ? "Promo tidak diterapkan. Centang lagi untuk memakai gratis ongkir."
+                      : eligibleMerchantCount > 0
+                      ? `✓ Gratis ongkir diterapkan untuk ${eligibleMerchantCount} toko`
+                      : `Belanja minimal ${formatRupiah(50000)} per toko untuk gratis ongkir`}
                   </p>
                 </div>
-              </div>
+              </label>
             );
           })()}
 
@@ -157,7 +168,11 @@ export default function CartPage() {
             />
           )}
 
-          <CartSummary items={items} shippingFee={10000} />
+          <CartSummary
+            items={items}
+            shippingFee={10000}
+            promoActive={promoActive}
+          />
         </div>
       )}
     </div>

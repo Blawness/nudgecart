@@ -4,7 +4,19 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, ShoppingBag, Receipt, Package } from "lucide-react";
+import {
+  Plus,
+  Pencil,
+  Trash2,
+  ShoppingBag,
+  Receipt,
+  Package,
+  Settings,
+  Star,
+  ShieldCheck,
+  HelpCircle,
+  ChevronRight,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,6 +53,13 @@ const emptyForm = {
   postalCode: "",
 };
 
+const accountMenuItems = [
+  { label: "Account Settings", icon: Settings },
+  { label: "Ratings & Reviews", icon: Star },
+  { label: "Application Permissions", icon: ShieldCheck },
+  { label: "Help Center", icon: HelpCircle },
+];
+
 export default function ProfilePage() {
   const { data: session, update: updateSession } = useSession();
   const queryClient = useQueryClient();
@@ -57,7 +76,14 @@ export default function ProfilePage() {
       const res = await fetch("/api/user/stats");
       if (!res.ok) throw new Error("Gagal memuat statistik");
       const json = await res.json();
-      return json.data as { totalOrders: number; totalSpent: number; totalItems: number };
+      return json.data as {
+        totalOrders: number;
+        totalSpent: number;
+        totalItems: number;
+        totalSaved: number;
+        phone: string | null;
+        memberSince: string | null;
+      };
     },
   });
 
@@ -137,7 +163,10 @@ export default function ProfilePage() {
 
   const handleProfileSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    profileMutation.mutate({ name, phone });
+    profileMutation.mutate({
+      name: name || session?.user?.name || "",
+      phone: phone || stats?.phone || "",
+    });
   };
 
   const handleAddressSubmit = (e: React.FormEvent) => {
@@ -169,27 +198,79 @@ export default function ProfilePage() {
     setDialogOpen(true);
   };
 
+  const firstAddressPhone = addresses?.[0]?.phone;
+  const displayContact = stats?.phone || firstAddressPhone || session?.user?.email || "-";
+  const memberSince = stats?.memberSince
+    ? new Date(stats.memberSince).toLocaleDateString("id-ID", {
+        month: "short",
+        year: "numeric",
+      })
+    : "-";
+
   return (
     <div className="container mx-auto max-w-2xl px-4 py-8">
-      <h1 className="font-heading mb-6 text-2xl font-semibold">Profil Saya</h1>
+      <h1 className="font-heading mb-6 text-2xl font-semibold">Akun Saya</h1>
 
       <div className="flex flex-col gap-6">
         {/* User Summary Card */}
         <Card>
           <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="flex size-16 shrink-0 items-center justify-center rounded-full bg-primary text-2xl font-bold text-primary-foreground">
-                {session?.user?.name?.charAt(0).toUpperCase() ?? "?"}
+            <div className="flex items-start gap-4">
+              <div className="flex size-14 shrink-0 items-center justify-center rounded-full bg-primary text-xl font-bold text-primary-foreground">
+                {session?.user?.name?.charAt(0).toUpperCase() ?? "B"}
               </div>
-              <div className="min-w-0">
-                <p className="truncate text-lg font-semibold">
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="truncate text-lg font-semibold">
                   {session?.user?.name ?? "—"}
-                </p>
-                <p className="truncate text-sm text-muted-foreground">
-                  {session?.user?.email ?? "—"}
+                  </p>
+                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
+                    NEWBIE
+                  </span>
+                </div>
+                <p className="truncate text-sm text-muted-foreground">{displayContact}</p>
+                <p className="text-xs text-muted-foreground">
+                  Member since {memberSince}
                 </p>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-green-200 bg-green-50">
+          <CardContent className="flex items-center justify-between gap-3 pt-5 pb-5">
+            <div>
+              <p className="text-sm font-medium text-green-800">
+                Progress Belanja
+              </p>
+              <p className="text-xl font-bold text-green-900">
+                Kamu sudah hemat {formatRupiah(stats?.totalSaved ?? 0)}
+              </p>
+            </div>
+            <div className="rounded-full bg-white px-3 py-1 text-xs font-medium text-green-700">
+              Hemat aktif
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="divide-y p-0">
+            {accountMenuItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <button
+                  key={item.label}
+                  type="button"
+                  className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm transition-colors hover:bg-muted"
+                >
+                  <span className="flex size-9 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                    <Icon className="size-4" />
+                  </span>
+                  <span className="flex-1 font-medium">{item.label}</span>
+                  <ChevronRight className="size-4 text-muted-foreground" />
+                </button>
+              );
+            })}
           </CardContent>
         </Card>
 
@@ -262,7 +343,7 @@ export default function ProfilePage() {
                 <Label htmlFor="name">Nama</Label>
                 <Input
                   id="name"
-                  value={name}
+                  value={name || session?.user?.name || ""}
                   onChange={(e) => setName(e.target.value)}
                   required
                 />
@@ -272,7 +353,7 @@ export default function ProfilePage() {
                 <Input
                   id="phone"
                   placeholder="08123456789"
-                  value={phone}
+                  value={phone || stats?.phone || ""}
                   onChange={(e) => setPhone(e.target.value)}
                 />
               </div>

@@ -6,6 +6,45 @@ import { eq } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
+type PreferenceCategoryId =
+  | "sayuran_telur"
+  | "buah"
+  | "rumah_tangga"
+  | "lainnya";
+type LifestyleType = "HEMAT" | "SEHAT" | "ECO";
+type ShoppingFrequency = "HARIAN" | "MINGGUAN" | "BULANAN";
+
+const ALLOWED_CATEGORY_IDS = new Set<string>([
+  "sayuran_telur",
+  "buah",
+  "rumah_tangga",
+  "lainnya",
+] satisfies PreferenceCategoryId[]);
+
+const ALLOWED_LIFESTYLE_TYPES = new Set<string>([
+  "HEMAT",
+  "SEHAT",
+  "ECO",
+] satisfies LifestyleType[]);
+const ALLOWED_SHOPPING_FREQUENCIES = new Set<string>([
+  "HARIAN",
+  "MINGGUAN",
+  "BULANAN",
+] satisfies ShoppingFrequency[]);
+
+function normalizeFavoriteCategories(value: unknown) {
+  if (!Array.isArray(value)) return [];
+
+  return Array.from(
+    new Set(
+      value.filter(
+        (category): category is PreferenceCategoryId =>
+          typeof category === "string" && ALLOWED_CATEGORY_IDS.has(category),
+      ),
+    ),
+  );
+}
+
 export async function GET() {
   const session = await auth();
   if (!session?.user?.id) {
@@ -28,7 +67,23 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json();
-  const { favoriteCategories, lifestyleType, shoppingFrequency, onboardingCompleted, onboardingSkipped } = body;
+  const {
+    favoriteCategories,
+    lifestyleType,
+    shoppingFrequency,
+    onboardingCompleted,
+    onboardingSkipped,
+  } = body;
+  const nextFavoriteCategories = normalizeFavoriteCategories(favoriteCategories);
+  const nextLifestyleType =
+    typeof lifestyleType === "string" && ALLOWED_LIFESTYLE_TYPES.has(lifestyleType)
+      ? (lifestyleType as LifestyleType)
+      : null;
+  const nextShoppingFrequency =
+    typeof shoppingFrequency === "string" &&
+    ALLOWED_SHOPPING_FREQUENCIES.has(shoppingFrequency)
+      ? (shoppingFrequency as ShoppingFrequency)
+      : null;
 
   const [existing] = await db
     .select()
@@ -40,11 +95,23 @@ export async function POST(req: Request) {
     const [updated] = await db
       .update(schema.userPreferences)
       .set({
-        favoriteCategories: favoriteCategories ?? existing.favoriteCategories,
-        lifestyleType: lifestyleType ?? existing.lifestyleType,
-        shoppingFrequency: shoppingFrequency ?? existing.shoppingFrequency,
-        onboardingCompleted: onboardingCompleted ?? existing.onboardingCompleted,
-        onboardingSkipped: onboardingSkipped ?? existing.onboardingSkipped,
+        favoriteCategories: Array.isArray(favoriteCategories)
+          ? nextFavoriteCategories
+          : existing.favoriteCategories,
+        lifestyleType:
+          lifestyleType === undefined ? existing.lifestyleType : nextLifestyleType,
+        shoppingFrequency:
+          shoppingFrequency === undefined
+            ? existing.shoppingFrequency
+            : nextShoppingFrequency,
+        onboardingCompleted:
+          typeof onboardingCompleted === "boolean"
+            ? onboardingCompleted
+            : existing.onboardingCompleted,
+        onboardingSkipped:
+          typeof onboardingSkipped === "boolean"
+            ? onboardingSkipped
+            : existing.onboardingSkipped,
         updatedAt: new Date(),
       })
       .where(eq(schema.userPreferences.userId, session.user.id))
@@ -57,11 +124,13 @@ export async function POST(req: Request) {
     .insert(schema.userPreferences)
     .values({
       userId: session.user.id,
-      favoriteCategories: favoriteCategories ?? [],
-      lifestyleType: lifestyleType ?? null,
-      shoppingFrequency: shoppingFrequency ?? null,
-      onboardingCompleted: onboardingCompleted ?? false,
-      onboardingSkipped: onboardingSkipped ?? false,
+      favoriteCategories: nextFavoriteCategories,
+      lifestyleType: nextLifestyleType,
+      shoppingFrequency: nextShoppingFrequency,
+      onboardingCompleted:
+        typeof onboardingCompleted === "boolean" ? onboardingCompleted : false,
+      onboardingSkipped:
+        typeof onboardingSkipped === "boolean" ? onboardingSkipped : false,
     })
     .returning();
 

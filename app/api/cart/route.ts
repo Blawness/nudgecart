@@ -29,6 +29,12 @@ export async function GET() {
         id: cartItems.id,
         productId: cartItems.productId,
         quantity: cartItems.quantity,
+        bundleId: cartItems.bundleId,
+        bundleName: cartItems.bundleName,
+        bundleType: cartItems.bundleType,
+        bundlePrice: cartItems.bundlePrice,
+        bundleNormalTotal: cartItems.bundleNormalTotal,
+        bundleItems: cartItems.bundleItems,
         productName: products.name,
         price: products.price,
         stock: products.stock,
@@ -64,13 +70,17 @@ export async function GET() {
     const mappedItems = items.map((item) => ({
       id: item.id,
       productId: item.productId,
-      productName: item.productName,
-      price: item.price,
+      productName: item.bundleName ?? item.productName,
+      price: item.bundlePrice ?? item.price,
       stock: item.stock,
       imageUrl: imageMap.get(item.productId) ?? "/placeholder.png",
       quantity: item.quantity,
       merchantId: item.merchantId,
       merchantName: item.merchantName,
+      bundleId: item.bundleId,
+      bundleType: item.bundleType,
+      bundleNormalTotal: item.bundleNormalTotal,
+      bundleItems: item.bundleItems ?? [],
     }));
 
     return NextResponse.json({

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { eq, inArray, and } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import {
@@ -10,7 +10,6 @@ import {
   merchants,
   orders,
   orderItems,
-  productImages,
 } from "@/drizzle/schema";
 
 export async function GET() {
@@ -83,7 +82,11 @@ const checkoutSchema = z.object({
   addressId: z.string().uuid(),
   paymentMethod: z.enum(["BANK_TRANSFER", "COD"]),
   note: z.string().optional(),
+  promoCode: z.enum(["GRATIS_ONGKIR"]).optional(),
 });
+
+const SHIPPING_FEE = 10000;
+const FREE_SHIPPING_MINIMUM = 50000;
 
 export async function POST(request: Request) {
   try {
@@ -98,7 +101,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Data tidak valid" }, { status: 400 });
     }
 
-    const { addressId, paymentMethod, note } = parsed.data;
+    const { addressId, paymentMethod, note, promoCode } = parsed.data;
 
     const [cart] = await db
       .select({ id: carts.id })
@@ -115,6 +118,10 @@ export async function POST(request: Request) {
         cartItemId: cartItems.id,
         productId: cartItems.productId,
         quantity: cartItems.quantity,
+        bundleId: cartItems.bundleId,
+        bundleName: cartItems.bundleName,
+        bundlePrice: cartItems.bundlePrice,
+        bundleNormalTotal: cartItems.bundleNormalTotal,
         productName: products.name,
         price: products.price,
         stock: products.stock,
@@ -166,10 +173,13 @@ export async function POST(request: Request) {
 
       for (const [, group] of byMerchant) {
         const subtotal = group.items.reduce(
-          (sum, item) => sum + item.price * item.quantity,
+          (sum, item) => sum + (item.bundlePrice ?? item.price) * item.quantity,
           0
         );
-        const shippingFee = 10000;
+        const shippingFee =
+          promoCode === "GRATIS_ONGKIR" && subtotal >= FREE_SHIPPING_MINIMUM
+            ? 0
+            : SHIPPING_FEE;
         const total = subtotal + shippingFee;
 
         const [order] = await tx
@@ -188,13 +198,14 @@ export async function POST(request: Request) {
           .returning({ id: orders.id });
 
         for (const item of group.items) {
-          const itemSubtotal = item.price * item.quantity;
+          const effectivePrice = item.bundlePrice ?? item.price;
+          const itemSubtotal = effectivePrice * item.quantity;
 
           await tx.insert(orderItems).values({
             orderId: order.id,
             productId: item.productId,
-            productName: item.productName,
-            productPrice: item.price,
+            productName: item.bundleName ?? item.productName,
+            productPrice: effectivePrice,
             quantity: item.quantity,
             subtotal: itemSubtotal,
           });

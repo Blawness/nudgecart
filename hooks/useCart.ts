@@ -12,6 +12,10 @@ interface CartItemData {
   quantity: number;
   merchantId: string;
   merchantName: string;
+  bundleId?: string | null;
+  bundleType?: string | null;
+  bundleNormalTotal?: number | null;
+  bundleItems?: string[];
 }
 
 interface CartResponse {

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, LayoutGrid, MessageCircle, ShoppingCart, User } from "lucide-react";
+import { Home, LayoutGrid, ShoppingCart, TicketPercent, User } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/hooks/useCart";
@@ -18,9 +18,9 @@ interface Tab {
 const tabs: Tab[] = [
   { label: "Home", icon: Home, href: "/" },
   { label: "Kategori", icon: LayoutGrid, href: "/categories" },
-  { label: "Chat CS", icon: MessageCircle, href: "#", disabled: true },
+  { label: "Promo", icon: TicketPercent, href: "/promo" },
   { label: "Keranjang", icon: ShoppingCart, href: "/cart", showBadge: true },
-  { label: "Akun", icon: User, href: "/profile" },
+  { label: "Akun", icon: User, href: "/account" },
 ];
 
 export function BottomNav() {

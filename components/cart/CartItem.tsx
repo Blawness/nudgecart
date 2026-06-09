@@ -16,6 +16,10 @@ export interface CartItemData {
   stock: number;
   imageUrl: string;
   quantity: number;
+  bundleId?: string | null;
+  bundleType?: string | null;
+  bundleNormalTotal?: number | null;
+  bundleItems?: string[];
 }
 
 interface CartItemProps {
@@ -129,8 +133,19 @@ export function CartItem({ item }: CartItemProps) {
       </div>
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{item.productName}</p>
+        {item.bundleId && (
+          <p className="mt-0.5 text-xs font-medium text-primary">
+            {item.bundleType ?? "Package"} ·{" "}
+            {(item.bundleItems ?? []).join(" + ")}
+          </p>
+        )}
         <p className="text-sm text-muted-foreground">
           {formatRupiah(item.price)}
+          {item.bundleNormalTotal && item.bundleNormalTotal > item.price && (
+            <span className="ml-2 text-xs line-through">
+              {formatRupiah(item.bundleNormalTotal)}
+            </span>
+          )}
         </p>
         <div className="mt-1 flex items-center gap-1">
           <Button

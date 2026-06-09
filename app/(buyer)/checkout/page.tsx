@@ -1,14 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { ShoppingBag, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -30,6 +37,10 @@ interface CheckoutCartItem {
   quantity: number;
   merchantId: string;
   merchantName: string;
+  bundleId?: string | null;
+  bundleType?: string | null;
+  bundleNormalTotal?: number | null;
+  bundleItems?: string[];
 }
 
 interface MerchantGroup {
@@ -39,13 +50,31 @@ interface MerchantGroup {
 }
 
 export default function CheckoutPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="container mx-auto max-w-2xl px-4 py-8">
+          <Skeleton className="h-40 w-full rounded-xl" />
+        </div>
+      }
+    >
+      <CheckoutContent />
+    </Suspense>
+  );
+}
+
+function CheckoutContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null);
   const [note, setNote] = useState("");
+  const [successRedirectUrl, setSuccessRedirectUrl] = useState<string | null>(null);
+  const [foodLossDialogOpen, setFoodLossDialogOpen] = useState(false);
 
   const { items, isLoading } = useCart();
+  const promoActive = searchParams.get("promo") !== "none";
 
   const groups: MerchantGroup[] = (() => {
     const map = new Map<string, MerchantGroup>();
@@ -73,6 +102,7 @@ export default function CheckoutPage() {
           addressId: selectedAddressId,
           paymentMethod,
           note: note || undefined,
+          promoCode: promoActive ? "GRATIS_ONGKIR" : undefined,
         }),
       });
       if (!res.ok) {
@@ -84,11 +114,8 @@ export default function CheckoutPage() {
     onSuccess: (res) => {
       const orders = res.data as Array<{ id: string }>;
       toast.success("Pesanan berhasil dibuat");
-      if (orders.length > 0) {
-        router.push(`/orders/${orders[0].id}`);
-      } else {
-        router.push("/orders");
-      }
+      setSuccessRedirectUrl(orders.length > 0 ? `/orders/${orders[0].id}` : "/orders");
+      setFoodLossDialogOpen(true);
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -106,6 +133,21 @@ export default function CheckoutPage() {
     }
     checkoutMutation.mutate();
   };
+
+  const finishCheckoutFlow = useCallback(() => {
+    setFoodLossDialogOpen(false);
+    router.push(successRedirectUrl ?? "/orders");
+  }, [router, successRedirectUrl]);
+
+  useEffect(() => {
+    if (!foodLossDialogOpen || !successRedirectUrl) return;
+
+    const timer = window.setTimeout(() => {
+      finishCheckoutFlow();
+    }, 3500);
+
+    return () => window.clearTimeout(timer);
+  }, [finishCheckoutFlow, foodLossDialogOpen, successRedirectUrl]);
 
   if (!isLoading && items.length === 0) {
     return (
@@ -150,7 +192,10 @@ export default function CheckoutPage() {
               0
             );
             const shippingFee = 10000;
-            const total = subtotal + shippingFee;
+            const promoSavings =
+              promoActive && subtotal >= 50000 ? shippingFee : 0;
+            const deliveryFee = shippingFee - promoSavings;
+            const total = subtotal + deliveryFee;
 
             return (
               <Card key={group.merchantId}>
@@ -181,25 +226,43 @@ export default function CheckoutPage() {
                     ))}
                   </div>
                   <div className="flex flex-col gap-1 text-sm">
+                    <div className="rounded-lg border border-green-200 bg-green-50 px-3 py-2 font-medium text-green-700">
+                      Kamu telah menghemat {formatRupiah(promoSavings)}
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Rewards</span>
+                      <span>{formatRupiah(0)}</span>
+                    </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Subtotal</span>
                       <span>{formatRupiah(subtotal)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Ongkos Kirim</span>
-                      <span>{formatRupiah(shippingFee)}</span>
+                      <span className="text-muted-foreground">Discount</span>
+                      <span>-{formatRupiah(0)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Voucher</span>
+                      <span>
+                        {promoSavings > 0
+                          ? `-${formatRupiah(promoSavings)}`
+                          : formatRupiah(0)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Delivery Fee</span>
+                      <span>{formatRupiah(deliveryFee)}</span>
                     </div>
                     <Separator className="my-1" />
                     <div className="flex justify-between font-medium">
-                      <span>Total</span>
+                      <span>Total Shopping</span>
                       <span>{formatRupiah(total)}</span>
                     </div>
                   </div>
-                  {subtotal >= 50000 && (
+                  {promoSavings > 0 && (
                     <div className="flex items-center gap-2 rounded-lg bg-green-50 border border-green-200 px-3 py-2 text-sm">
-                      <span>🎉</span>
                       <span className="text-green-700 font-medium">
-                        Kamu hemat Rp 10.000 ongkir dengan pembelian ini!
+                        Gratis ongkir diterapkan dari promo default keranjang.
                       </span>
                     </div>
                   )}
@@ -248,6 +311,28 @@ export default function CheckoutPage() {
           />
         </div>
       )}
+
+      <Dialog
+        open={foodLossDialogOpen}
+        onOpenChange={(open) => {
+          if (!open && successRedirectUrl) finishCheckoutFlow();
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Terima kasih sudah belanja berkelanjutan</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Anda telah berkontribusi pada pengurangan food loss melalui produk
+            segar dan keputusan belanja yang lebih berkelanjutan.
+          </p>
+          <DialogFooter>
+            <Button className="w-full" onClick={finishCheckoutFlow}>
+              Lihat Pesanan
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -233,6 +233,12 @@ export const cartItems = pgTable("cart_items", {
     .notNull()
     .references(() => products.id, { onDelete: "cascade" }),
   quantity: integer("quantity").notNull().default(1),
+  bundleId: text("bundle_id"),
+  bundleName: text("bundle_name"),
+  bundleType: text("bundle_type"),
+  bundlePrice: integer("bundle_price"),
+  bundleNormalTotal: integer("bundle_normal_total"),
+  bundleItems: text("bundle_items").array(),
 });
 
 export const orders = pgTable("orders", {

@@ -13,6 +13,19 @@ test.describe("NudgeCart E2E — Public Pages", () => {
     await expect(page.getByRole("heading", { name: "Kategori" })).toBeVisible();
   });
 
+  test("homepage shows personalized product and promo sections without blank state", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await expect(
+      page.getByRole("heading", { name: "Produk Pilihan" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Promo Pilihan" }),
+    ).toBeVisible();
+    await expect(page.getByText(/Lebih Hemat Rp/).first()).toBeVisible();
+  });
+
   test("homepage hero banner auto-rotates", async ({ page }) => {
     await page.goto("/");
     const banner = page.locator("section").first();
@@ -142,6 +155,47 @@ test.describe("NudgeCart E2E — Auth Flow", () => {
   test("unauthenticated user redirected from onboarding to login", async ({ page }) => {
     await page.goto("/onboarding");
     await expect(page).toHaveURL(/\/login/);
+  });
+
+  test("authenticated buyer sees one-step preference onboarding picker", async ({ browser }) => {
+    const context = await browser.newContext({ storageState: undefined });
+    const authPage = await context.newPage();
+
+    await authPage.goto("/login");
+    await authPage.locator('input[type="email"]').fill("buyer@pasarku.id");
+    await authPage.locator('input[type="password"]').fill("password123");
+    await authPage.getByRole("button", { name: /Masuk/i }).click();
+    await authPage.waitForURL(/.*/);
+
+    await authPage.goto("/onboarding");
+
+    await expect(
+      authPage.getByRole("heading", {
+        name: "Kategori Produk apa yang paling Sering Kamu Beli?",
+      }),
+    ).toBeVisible();
+    await expect(authPage.getByText("Pilih yang paling sesuai")).toBeVisible();
+
+    for (const option of [
+      "Sayuran & Telur",
+      "Buah-Buahan",
+      "Kebutuhan Rumah Tangga",
+      "Lainnya",
+    ]) {
+      await expect(authPage.getByRole("button", { name: option })).toBeVisible();
+    }
+
+    await expect(authPage.getByRole("button", { name: /Lewati/ })).toBeVisible();
+    await expect(authPage.getByRole("button", { name: /Lanjut/ })).toBeVisible();
+    await expect(
+      authPage.getByText(
+        "Preferensi ini membantu kami menampilkan produk yang paling relevan untuk kamu",
+      ),
+    ).toBeVisible();
+    await expect(authPage.getByText("Gaya belanja")).toHaveCount(0);
+    await expect(authPage.getByText("Seberapa sering")).toHaveCount(0);
+
+    await context.close();
   });
 
   test("merchant routes redirect to login when unauthenticated", async ({ page }) => {

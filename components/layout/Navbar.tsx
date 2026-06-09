@@ -85,6 +85,12 @@ export function Navbar() {
               >
                 Promo
               </Link>
+              <Link
+                href={session ? "/account" : "/login"}
+                className="text-sm font-medium text-gray-600 hover:text-primary"
+              >
+                Akun
+              </Link>
             </div>
 
             {/* Cart — desktop only */}
@@ -131,8 +137,8 @@ export function Navbar() {
                         <DropdownMenuItem render={<Link href="/orders" />}>
                           Pesanan Saya
                         </DropdownMenuItem>
-                        <DropdownMenuItem render={<Link href="/profile" />}>
-                          Profil
+                        <DropdownMenuItem render={<Link href="/account" />}>
+                          Akun
                         </DropdownMenuItem>
                       </>
                     )}

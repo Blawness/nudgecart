@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { eq, and } from "drizzle-orm";
+import { eq, and, isNull } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { carts, cartItems, products } from "@/drizzle/schema";
@@ -67,7 +67,8 @@ export async function POST(request: Request) {
       .where(
         and(
           eq(cartItems.cartId, cart.id),
-          eq(cartItems.productId, productId)
+          eq(cartItems.productId, productId),
+          isNull(cartItems.bundleId)
         )
       )
       .limit(1);
