@@ -38,7 +38,7 @@ async function countNudgeTypeLast7Days(
   return result[0]?.count ?? 0;
 }
 
-function determineFraming(context: NudgeContext): NudgeFraming | null {
+export function determineFraming(context: NudgeContext): NudgeFraming | null {
   if (context === "HOME" || context === "PRODUCT_DETAIL") return "GAIN";
   if (context === "CART" || context === "CHECKOUT") return "LOSS";
   if (context === "POST_PURCHASE") return "GAIN";
@@ -162,7 +162,7 @@ async function findCheaperAlternative(
   };
 }
 
-const nudgeTemplates: Record<string, { headline: string; body: string; ctaText: string }> = {
+export const nudgeTemplates: Record<string, { headline: string; body: string; ctaText: string }> = {
   PRE_CHECKOUT_ECO: {
     headline: "Lengkapi dengan produk ramah lingkungan",
     body: "Tambahkan 1 produk ramah lingkungan untuk melengkapi belanjaanmu.",
