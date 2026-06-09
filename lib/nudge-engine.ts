@@ -38,6 +38,11 @@ async function countNudgeTypeLast7Days(
   return result[0]?.count ?? 0;
 }
 
+export async function isRateLimited(userId: string, nudgeType: NudgeType, maxPerWeek = 2): Promise<boolean> {
+  const count = await countNudgeTypeLast7Days(userId, nudgeType);
+  return count >= maxPerWeek;
+}
+
 export function determineFraming(context: NudgeContext): NudgeFraming | null {
   if (context === "HOME" || context === "PRODUCT_DETAIL") return "GAIN";
   if (context === "CART" || context === "CHECKOUT") return "LOSS";
@@ -265,6 +270,10 @@ export async function evaluateNudge(params: {
   }
 
   if (context === "CART") {
+    const limited = await isRateLimited(userId, "PRE_CHECKOUT");
+    if (limited) {
+      return { shouldShow: false, nudgeType: null, framingType: null, content: null };
+    }
     const template = nudgeTemplates.PRE_CHECKOUT_ECO;
     return {
       shouldShow: true,
@@ -279,6 +288,10 @@ export async function evaluateNudge(params: {
   }
 
   if (context === "CHECKOUT") {
+    const limited = await isRateLimited(userId, "LAST_CHANCE");
+    if (limited) {
+      return { shouldShow: false, nudgeType: null, framingType: null, content: null };
+    }
     const template = nudgeTemplates.LAST_CHANCE_CARBON;
     return {
       shouldShow: true,
@@ -293,6 +306,10 @@ export async function evaluateNudge(params: {
   }
 
   if (context === "POST_PURCHASE") {
+    const limited = await isRateLimited(userId, "POST_PURCHASE");
+    if (limited) {
+      return { shouldShow: false, nudgeType: null, framingType: null, content: null };
+    }
     const template = nudgeTemplates.POST_PURCHASE_THANKS;
     return {
       shouldShow: true,

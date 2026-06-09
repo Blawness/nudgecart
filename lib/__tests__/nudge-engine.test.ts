@@ -1,6 +1,13 @@
-import { describe, it, expect } from "vitest";
-import { determineFraming, nudgeTemplates } from "../nudge-engine";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { determineFraming, nudgeTemplates, isRateLimited } from "../nudge-engine";
 import type { NudgeContext } from "@/types";
+
+vi.mock("../db", () => {
+  const mockWhere = vi.fn();
+  const mockFrom = vi.fn(() => ({ where: mockWhere }));
+  const mockSelect = vi.fn(() => ({ from: mockFrom }));
+  return { db: { select: mockSelect } };
+});
 
 describe("determineFraming", () => {
   it('returns GAIN for HOME context', () => {
@@ -55,5 +62,47 @@ describe("nudgeTemplates", () => {
     for (const key of requiredKeys) {
       expect(nudgeTemplates[key].ctaText).toBeDefined();
     }
+  });
+});
+
+describe("isRateLimited", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("returns false when count is below maxPerWeek", async () => {
+    const { db } = await import("../db");
+    const mockWhere = (db.select as ReturnType<typeof vi.fn>)().from().where;
+    mockWhere.mockResolvedValue([{ count: 1 }]);
+
+    const result = await isRateLimited("user-1", "PRE_CHECKOUT");
+    expect(result).toBe(false);
+  });
+
+  it("returns true when count equals maxPerWeek", async () => {
+    const { db } = await import("../db");
+    const mockWhere = (db.select as ReturnType<typeof vi.fn>)().from().where;
+    mockWhere.mockResolvedValue([{ count: 2 }]);
+
+    const result = await isRateLimited("user-1", "PRE_CHECKOUT");
+    expect(result).toBe(true);
+  });
+
+  it("returns true when count exceeds maxPerWeek", async () => {
+    const { db } = await import("../db");
+    const mockWhere = (db.select as ReturnType<typeof vi.fn>)().from().where;
+    mockWhere.mockResolvedValue([{ count: 5 }]);
+
+    const result = await isRateLimited("user-1", "PRE_CHECKOUT");
+    expect(result).toBe(true);
+  });
+
+  it("accepts custom maxPerWeek parameter", async () => {
+    const { db } = await import("../db");
+    const mockWhere = (db.select as ReturnType<typeof vi.fn>)().from().where;
+    mockWhere.mockResolvedValue([{ count: 3 }]);
+
+    const result = await isRateLimited("user-1", "PRE_CHECKOUT", 5);
+    expect(result).toBe(false);
   });
 });
