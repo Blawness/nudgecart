@@ -53,7 +53,7 @@ export function RecommendationSection({ userName, isAuthenticated = false }: Rec
   if (!isLoading && products.length === 0 && !ecoLoading && ecoProducts.length === 0) return null;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8" data-testid="recommendation-section">
       {isLoading ? (
         <div>
           <Skeleton className="h-6 w-48 mb-4" />

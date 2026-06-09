@@ -23,7 +23,7 @@ export function SocialNormBadge({ type }: SocialNormBadgeProps) {
   const Icon = variant.icon;
 
   return (
-    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
+    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1" data-testid="social-norm-badge">
       <Icon className="size-3.5 shrink-0" />
       <span>{variant.text}</span>
     </div>

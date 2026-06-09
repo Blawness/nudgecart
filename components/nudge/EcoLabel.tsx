@@ -22,7 +22,7 @@ export function EcoLabel({ label, tooltip }: EcoLabelProps) {
   if (!config) return null;
 
   return (
-    <div className="relative inline-flex items-center">
+    <div className="relative inline-flex items-center" data-testid="eco-label">
       <span
         className={cn(
           "inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full border",
