@@ -6,7 +6,18 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronLeft, ChevronRight, LayoutGrid } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  LayoutGrid,
+  Apple,
+  Carrot,
+  Fish,
+  CupSoda,
+  Cookie,
+  CookingPot,
+  type LucideIcon,
+} from "lucide-react";
 import { useRef } from "react";
 import type { ApiSuccess } from "@/types";
 
@@ -16,6 +27,17 @@ interface Category {
   slug: string;
   iconUrl?: string | null;
 }
+
+// Per-category fallback icon + tint, keyed by slug, used when no iconUrl image
+// has been uploaded for the category.
+const categoryIconMap: Record<string, { icon: LucideIcon; className: string }> = {
+  "buah-buahan": { icon: Apple, className: "text-rose-500" },
+  sayuran: { icon: Carrot, className: "text-green-600" },
+  "daging-ikan": { icon: Fish, className: "text-sky-600" },
+  minuman: { icon: CupSoda, className: "text-amber-500" },
+  "bumbu-dapur": { icon: CookingPot, className: "text-orange-600" },
+  "snack-makanan-ringan": { icon: Cookie, className: "text-yellow-600" },
+};
 
 export function CategoryNav() {
   const pathname = usePathname();
@@ -76,6 +98,8 @@ export function CategoryNav() {
           {categories.map((category) => {
             const href = `/categories/${category.slug}`;
             const isActive = pathname === href;
+            const fallback = categoryIconMap[category.slug];
+            const FallbackIcon = fallback?.icon ?? LayoutGrid;
 
             return (
               <Link
@@ -99,7 +123,12 @@ export function CategoryNav() {
                       sizes="80px"
                     />
                   ) : (
-                    <LayoutGrid className="size-7 sm:size-8 text-gray-400" />
+                    <FallbackIcon
+                      className={cn(
+                        "size-7 sm:size-8",
+                        fallback?.className ?? "text-gray-400"
+                      )}
+                    />
                   )}
                 </div>
                 <span
