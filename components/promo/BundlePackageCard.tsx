@@ -62,7 +62,7 @@ export function BundlePackageCard({
   return (
     <article
       className={cn(
-        "relative overflow-hidden rounded-lg border border-gray-100 bg-white shadow-sm transition-shadow hover:shadow-md",
+        "relative flex h-full flex-col overflow-hidden rounded-lg border border-gray-100 bg-white shadow-sm transition-shadow hover:shadow-md",
         className,
       )}
     >
@@ -76,11 +76,11 @@ export function BundlePackageCard({
       </div>
 
       <div className="bg-gray-50 px-4 pt-12 pb-4">
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid h-44 grid-cols-2 auto-rows-fr gap-2">
           {bundle.items.slice(0, 4).map((item) => (
             <div
               key={item.productSlug}
-              className="relative aspect-square overflow-hidden rounded-md bg-white"
+              className="relative h-full min-h-0 overflow-hidden rounded-md bg-white"
             >
               <Image
                 src={item.imageUrl}
@@ -100,7 +100,7 @@ export function BundlePackageCard({
         </div>
       </div>
 
-      <div className="space-y-3 p-4">
+      <div className="flex flex-1 flex-col space-y-3 p-4">
         <div className="flex flex-wrap items-center gap-1.5">
           <Badge className="bg-primary/10 text-primary hover:bg-primary/10">
             {bundle.type}
@@ -117,7 +117,7 @@ export function BundlePackageCard({
           <h3 className="line-clamp-2 min-h-10 text-sm font-bold leading-5 text-gray-900">
             {bundle.name}
           </h3>
-          <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">
+          <p className="mt-1 line-clamp-2 min-h-10 text-xs leading-5 text-muted-foreground">
             {bundle.items
               .map((item) =>
                 (item.quantity ?? 1) > 1
@@ -145,6 +145,8 @@ export function BundlePackageCard({
             Instant Delivery
           </Badge>
         </div>
+
+        <div className="grow" />
 
         <Button
           type="button"
