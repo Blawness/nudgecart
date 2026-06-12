@@ -20,12 +20,7 @@ export default async function MerchantLayout({
     <div className="flex min-h-screen">
       <Sidebar role="MERCHANT" />
       <main className="flex-1 min-w-0 md:pl-56">
-        <div className="p-4 pt-18 md:p-6">
-          <h1 className="mb-6 text-xl font-bold sm:text-2xl">
-            Dashboard Merchant
-          </h1>
-          {children}
-        </div>
+        <div className="p-4 pt-18 md:p-6">{children}</div>
       </main>
     </div>
   );

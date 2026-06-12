@@ -70,5 +70,13 @@ export default async function DashboardPage() {
     outOfStock: outOfStock ?? 0,
   };
 
-  return <MerchantStats initialData={stats} />;
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl font-semibold">Dashboard</h2>
+        <p className="text-sm text-muted-foreground">{merchant.storeName}</p>
+      </div>
+      <MerchantStats initialData={stats} />
+    </div>
+  );
 }
